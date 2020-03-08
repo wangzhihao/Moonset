@@ -1,0 +1,42 @@
+{
+  "name": "moonset",
+  "version": "0.0.8",
+  "description": "Moonset CLI",
+  "keywords": [
+    "Data Processing",
+    "AWS",
+    "EMR"
+  ],
+  "author": "Zhihao Wang <accept.acm@gmail.com>",
+  "homepage": "https://github.com/FBAChinaOpenSource/Moonset",
+  "license": "MIT",
+  "bin": {
+    "moonset": "cli.js"
+  },
+  "files": [
+    "cli.js",
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FBAChinaOpenSource/Moonset.git"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "lint": " eslint --fix ./lib/**/*.ts",
+    "clean": "find lib -type f -name \"*.js\" -o -name \"*.d.ts\" | xargs -r rm",
+    "prepare": "npm run-script build",
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "bugs": {
+    "url": "https://github.com/FBAChinaOpenSource/Moonset/issues"
+  },
+  "dependencies": {
+    "@moonset/executor": "^0.0.8",
+    "@types/yargs": "^15.0.4",
+    "typescript": "^3.8.3",
+    "winston": "^3.2.1",
+    "yargs": "^15.1.0"
+  }
+}

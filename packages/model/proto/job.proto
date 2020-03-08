@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+import "dataset.proto";
+import "task.proto";
+
+message Job {
+    repeated DataSet input = 1;
+    repeated DataSet output = 2;
+    repeated Task task = 3;
+}
+
