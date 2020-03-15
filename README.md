@@ -1,5 +1,5 @@
 <p align="center">
-  <img alt="moonset" src="https://raw.githubusercontent.com/wangzhihao/Moonset/second/images/moonset.jpg" width="480">
+  <img alt="moonset" src="https://raw.githubusercontent.com/FBAChinaOpenSource/Moonset/master/images/moonset.jpg" width="480">
 </p>
 
 # Moonset
