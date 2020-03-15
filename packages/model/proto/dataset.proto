@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+message DataSet {
+    map<string, string> partitions = 1;
+    oneof type {
+        Glue glue = 3;
+    }
+}
+
+message Glue {
+    string db_name = 1;
+    string table_name= 2;
+}
+

@@ -1,0 +1,59 @@
+{
+  "name": "@moonset/executor",
+  "version": "0.0.8",
+  "description": "The Moonset Executor",
+  "keywords": [
+    "AWS",
+    "EMR"
+  ],
+  "author": "Zhihao Wang <accept.acm@gmail.com>",
+  "homepage": "https://github.com/FBAChinaOpenSource/Moonset",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FBAChinaOpenSource/Moonset.git"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "lint": "eslint --fix ./lib/**/*.ts",
+    "clean": "find lib -type f -name \"*.js\" -o -name \"*.d.ts\" | xargs -r rm",
+    "prepare": "npm run-script clean && npm run-script lint && npm run-script build",
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "bugs": {
+    "url": "https://github.com/FBAChinaOpenSource/Moonset/issues"
+  },
+  "dependencies": {
+    "@aws-cdk/aws-glue": "^1.27.0",
+    "@aws-cdk/aws-iam": "^1.27.0",
+    "@aws-cdk/aws-s3": "^1.27.0",
+    "@aws-cdk/aws-s3-assets": "^1.27.0",
+    "@aws-cdk/aws-stepfunctions": "^1.27.0",
+    "@aws-cdk/aws-stepfunctions-tasks": "^1.27.0",
+    "@aws-cdk/core": "^1.27.0",
+    "@moonset/model": "^0.0.8",
+    "@types/node": "^13.9.0",
+    "@types/uuid": "^7.0.0",
+    "aws-cdk": "^1.27.0",
+    "aws-sdk": "^2.635.0",
+    "execa": "^4.0.0",
+    "typescript": "^3.8.3",
+    "uuid": "^7.0.2",
+    "winston": "^3.2.1"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^2.22.0",
+    "@typescript-eslint/parser": "^2.22.0",
+    "eslint": "^6.8.0",
+    "eslint-config-google": "^0.14.0"
+  }
+}
