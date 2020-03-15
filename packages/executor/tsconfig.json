@@ -15,8 +15,8 @@
         "noFallthroughCasesInSwitch": true,
         "inlineSourceMap": true,
         "inlineSources": true,
-        "incremental": true,
-        "rootDir"  :"lib",
+        "incremental": false,
+        "resolveJsonModule": true,
         "experimentalDecorators": true,
         "strictPropertyInitialization":false
     },

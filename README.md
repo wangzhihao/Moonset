@@ -1,3 +1,7 @@
+<p align="center">
+  <img alt="moonset" src="https://raw.githubusercontent.com/wangzhihao/Moonset/second/images/moonset.jpg" width="480">
+</p>
+
 # Moonset
 
 Moonset is a data processing framework on top of AWS. It provides both batch

@@ -1,10 +1,12 @@
 import * as yargs from 'yargs';
 import {logger} from './log';
+import {ask} from './config';
 import {Executor} from '@moonset/executor';
 
 export class Moonset {
   async run() {
     const argv = yargs
+        .command(['config'], 'configure the crendentials.')
         .command(['deploy'], 'Deploy the job.',
             (yargs) => yargs
                 .option('job', {type: 'string', desc: 'job payload',
@@ -22,6 +24,9 @@ export class Moonset {
     logger.debug('Command line arguments:', argv);
     const cmd = argv._[0];
     switch (cmd) {
+      case 'config':
+        ask();
+        return;
       case 'deploy':
         await new Executor().deploy(argv.job);
         return;

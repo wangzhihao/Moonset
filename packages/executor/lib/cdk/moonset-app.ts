@@ -6,6 +6,7 @@ import {MoonsetConstants as MC, Config as C} from '../constants';
 import * as ir from '../ir';
 // eslint-disable-next-line
 import * as vi from '../visitor';
+import * as rc from '~/.moonsetrc';
 
 export class MoonsetApp {
     app: cdk.App;
@@ -16,7 +17,7 @@ export class MoonsetApp {
       // Infra Stack stores some common resources like roles for reuse purpose.
       const infraStack = new cdk.Stack(this.app, MC.INFRA_STACK, {
         env: {
-          account: C.WORKING_ACCOUNT,
+          account: rc.working_account,
           region: C.WORKING_REGION,
         },
       });

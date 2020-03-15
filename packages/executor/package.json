@@ -26,7 +26,7 @@
     "watch": "tsc -w",
     "lint": "eslint --fix ./lib/**/*.ts",
     "clean": "find lib -type f -name \"*.js\" -o -name \"*.d.ts\" | xargs -r rm",
-    "prepare": "npm run-script build",
+    "prepare": "npm run-script clean && npm run-script lint && npm run-script build",
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "bugs": {

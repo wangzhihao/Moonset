@@ -13,8 +13,6 @@ export enum OP {
     MetastoreSync,
     MetastoreSyncBack,
     Asset,
-    EDXPrepare,
-    EDXUpload,
 }
 /* eslint-enable */
 
@@ -38,9 +36,6 @@ export class DeployVisitor extends vi.SimpleVisitor<IR[]> {
     if (node.dataset.glue) {
       context.push({op: OP.MetastoreSync, node: node});
     }
-    if (node.dataset.edx) {
-      context.push({op: OP.EDXPrepare, node: node});
-    }
     context.push({op: OP.MetricEnd, node: node});
   }
 
@@ -49,9 +44,6 @@ export class DeployVisitor extends vi.SimpleVisitor<IR[]> {
     if (node.dataset.glue) {
       context.push({op: OP.MetastoreSync, node: node});
     }
-    if (node.dataset.edx) {
-      context.push({op: OP.EDXPrepare, node: node});
-    }
     context.push({op: OP.MetricEnd, node: node});
   }
 
@@ -59,9 +51,6 @@ export class DeployVisitor extends vi.SimpleVisitor<IR[]> {
     context.push({op: OP.MetricBegin, node: node});
     if (node.dataset.glue) {
       context.push({op: OP.MetastoreSyncBack, node: node});
-    }
-    if (node.dataset.edx) {
-      context.push({op: OP.EDXUpload, node: node});
     }
     context.push({op: OP.MetricEnd, node: node});
   }
@@ -84,26 +73,17 @@ export class RunVisitor extends vi.SimpleVisitor<IR[]> {
     if (node.dataset.glue) {
       context.push({op: OP.MetastoreSync, node: node});
     }
-    if (node.dataset.edx) {
-      context.push({op: OP.EDXPrepare, node: node});
-    }
   }
 
   visitInput(node: vi.InputNode, context: IR[]) {
     if (node.dataset.glue) {
       context.push({op: OP.MetastoreSync, node: node});
     }
-    if (node.dataset.edx) {
-      context.push({op: OP.EDXPrepare, node: node});
-    }
   }
 
   visitOutput(node: vi.OutputNode, context: IR[]) {
     if (node.dataset.glue) {
       context.push({op: OP.MetastoreSyncBack, node: node});
-    }
-    if (node.dataset.edx) {
-      context.push({op: OP.EDXUpload, node: node});
     }
   }
 

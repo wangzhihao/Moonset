@@ -3,15 +3,8 @@ syntax = "proto3";
 message DataSet {
     map<string, string> partitions = 1;
     oneof type {
-        EDX edx = 2;
         Glue glue = 3;
     }
-}
-
-message EDX {
-    string provider = 1;
-    string subject = 2;
-    string dataset = 3;
 }
 
 message Glue {
