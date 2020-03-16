@@ -1,7 +1,7 @@
 {
-  "name": "moonset",
-  "version": "0.0.8",
-  "description": "Moonset CLI",
+  "name": "@moonset/util",
+  "version": "0.0.1",
+  "description": "Moonset Utils",
   "keywords": [
     "Data Processing",
     "AWS",
@@ -10,11 +10,8 @@
   "author": "Zhihao Wang <accept.acm@gmail.com>",
   "homepage": "https://github.com/FBAChinaOpenSource/Moonset",
   "license": "MIT",
-  "bin": {
-    "moonset": "cli.js"
-  },
+  "main": "lib/index.js",
   "files": [
-    "cli.js",
     "lib"
   ],
   "repository": {
@@ -27,36 +24,21 @@
     "lint": "eslint --fix ./lib/**/*.ts",
     "clean": "find lib -type f -name \"*.js\" -o -name \"*.d.ts\" | xargs -r rm",
     "prepare": "npm run-script clean && npm run-script lint && npm run-script build",
-    "test": "jest"
+    "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "bugs": {
     "url": "https://github.com/FBAChinaOpenSource/Moonset/issues"
   },
   "dependencies": {
-    "@moonset/executor": "^0.0.8",
-    "@moonset/util": "^0.0.1",
-    "@types/yargs": "^15.0.4",
+    "@types/inquirer": "^6.5.0",
+    "inquirer": "^7.0.6",
     "typescript": "^3.8.3",
-    "yargs": "^15.1.0"
+    "winston": "^3.2.1"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^2.22.0",
-    "@types/jest": "^25.1.4",
     "@typescript-eslint/parser": "^2.22.0",
     "eslint": "^6.8.0",
-    "eslint-config-google": "^0.14.0",
-    "jest": "^25.1.0",
-    "ts-jest": "^25.2.1"
-  },
-  "jest": {
-    "moduleFileExtensions": [
-      "js"
-    ],
-    "coverageThreshold": {
-      "global": {
-        "branches": 45,
-        "statements": 60
-      }
-    }
+    "eslint-config-google": "^0.14.0"
   }
 }

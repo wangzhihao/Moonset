@@ -1,7 +1,7 @@
 import {Job} from '@moonset/model';
 import * as vi from './visitor';
 import * as ir from './ir';
-import {logger} from './log';
+import {logger} from '@moonset/util';
 import {Deployment} from './deploy';
 
 
@@ -11,11 +11,11 @@ export class Executor {
   async deploy(job: any) {
     await new Deployment().start(this.getRootNode(job));
   }
-  ir(job: any) {
+  ir(job: any): ir.IR[] {
     const root = this.getRootNode(job);
     const states: ir.IR[] = [];
     root.accept(new ir.DeployVisitor(), states);
-    console.log(JSON.stringify(states));
+    return states;
   }
   private getRootNode(job: any): vi.RootNode {
     const jobInput = job instanceof Array ? job : [job];

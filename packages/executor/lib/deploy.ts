@@ -5,15 +5,15 @@ import * as ir from './ir';
 import * as cdk from './cdk';
 import * as aws from 'aws-sdk';
 import * as TagAPI from 'aws-sdk/clients/resourcegroupstaggingapi';
-import {MoonsetConstants as MC, Config as C} from './constants';
-import {logger} from './log';
+import {MoonsetConstants as MC} from './constants';
+import {Config, ConfigConstant as CC, logger} from '@moonset/util';
 import * as execa from 'execa';
 
 export class Deployment {
   private async initSDK() {
     if (!aws.config.region) {
       aws.config.update({
-        region: C.WORKING_REGION,
+      region: Config.get(CC.WORKING_REGION)
       });
     }
   }
@@ -25,7 +25,7 @@ export class Deployment {
       '*',
       '--requireApproval=never',
       `--tags="${MC.TAG_MOONSET_ID}=${context.id}"`, // tags all resources
-      `--app=${C.BUILD_TMP_DIR}`,
+      `--app=${MC.BUILD_TMP_DIR}`,
     ], {stdio: ['ignore', 'pipe', 'pipe']});
 
     if (command.stdout) {

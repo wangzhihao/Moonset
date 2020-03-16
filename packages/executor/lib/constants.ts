@@ -10,10 +10,5 @@ export const MoonsetConstants = {
   EMR_EC2_ROLE: 'MoonsetEmrEc2Role',
   EMR_EC2_PROFILE: 'MoonsetEmrEc2Profile',
   EMR_ROLE: 'MoonsetEmrRole',
-};
-
-export const Config = {
-  WORKING_ACCOUNT: '734326032173',
-  WORKING_REGION: 'us-east-1',
   BUILD_TMP_DIR: './build/cdk.out',
 };

@@ -13,11 +13,11 @@ npx moonset --help
 
 For example, to run some hive tasks on AWS EMR. Try to following command.
 
-```
-export AWS_ACCESS_KEY_ID= <...>
-export AWS_SECRET_ACCESS_KEY= <...>
+```bash
+# config the credentials
+npx moonset config
 
-
+# run a job
 npx moonset deploy --job '{
     "input": [
       {"glue": { "dbName": "foo", "tableName": "apple"}}

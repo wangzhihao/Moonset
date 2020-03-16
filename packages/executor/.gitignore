@@ -1,4 +1,6 @@
 tsconfig.tsbuildinfo
+__tests__/**/*.d.ts
+__tests__/**/*.js
 lib/**/*.d.ts
 lib/**/*.js
 build/
