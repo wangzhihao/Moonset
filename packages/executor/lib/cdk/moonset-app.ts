@@ -2,23 +2,23 @@ import * as sfn from '@aws-cdk/aws-stepfunctions';
 import * as sfnTasks from '@aws-cdk/aws-stepfunctions-tasks';
 import * as iam from '@aws-cdk/aws-iam';
 import * as cdk from '@aws-cdk/core';
-import {MoonsetConstants as MC, Config as C} from '../constants';
+import {MoonsetConstants as MC} from '../constants';
 import * as ir from '../ir';
 // eslint-disable-next-line
 import * as vi from '../visitor';
-import * as rc from '~/.moonsetrc';
+import {Config, ConfigConstant as CC} from '@moonset/util';
 
 export class MoonsetApp {
     app: cdk.App;
 
     constructor(props: MoonsetProps) {
-      this.app = new cdk.App({outdir: C.BUILD_TMP_DIR});
+      this.app = new cdk.App({outdir: MC.BUILD_TMP_DIR});
 
       // Infra Stack stores some common resources like roles for reuse purpose.
       const infraStack = new cdk.Stack(this.app, MC.INFRA_STACK, {
         env: {
-          account: rc.working_account,
-          region: C.WORKING_REGION,
+          account: Config.get(CC.WORKING_ACCOUNT),
+          region: Config.get(CC.WORKING_REGION),
         },
       });
 
@@ -26,8 +26,8 @@ export class MoonsetApp {
       // cluster when the state machine is executed.
       new MoonsetJobStack(this.app, MC.JOB_STACK, {
         env: {
-          account: C.WORKING_ACCOUNT,
-          region: C.WORKING_REGION,
+          account: Config.get(CC.WORKING_ACCOUNT),
+          region: Config.get(CC.WORKING_REGION),
         },
         infraStack,
         ...props,
