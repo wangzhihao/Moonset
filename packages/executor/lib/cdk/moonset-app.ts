@@ -2,6 +2,7 @@ import * as sfn from '@aws-cdk/aws-stepfunctions';
 import * as sfnTasks from '@aws-cdk/aws-stepfunctions-tasks';
 import * as iam from '@aws-cdk/aws-iam';
 import * as cdk from '@aws-cdk/core';
+import * as ec2 from '@aws-cdk/aws-ec2';
 import {MoonsetConstants as MC} from '../constants';
 import {MetastoreSyncConstruct} from './metastore-sync';
 import * as ir from '../ir';
@@ -54,6 +55,8 @@ class MoonsetJobStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props: MoonsetJobProps) {
     super(scope, id, props);
 
+    const vpc = new ec2.Vpc(props.infraStack, 'MoonsetVPC');
+
     const ec2Role = new iam.Role(props.infraStack, MC.EMR_EC2_ROLE, {
       assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
     });
@@ -103,6 +106,9 @@ class MoonsetJobStack extends cdk.Stack {
           instanceCount: 3,
           masterInstanceType: 'm5.xlarge',
           slaveInstanceType: 'm5.xlarge',
+          ec2SubnetIds: vpc.privateSubnets.map((x) => {
+              return x.subnetId;
+          }),
         },
         integrationPattern: sfn.ServiceIntegrationPattern.SYNC,
       }),
