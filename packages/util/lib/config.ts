@@ -11,6 +11,7 @@ export const ConfigConstant = {
   WORKING_REGION: 'WORKING_REGION',
   WORKING_ACCESS_KEY: 'WORKING_ACCESS_KEY',
   WORKING_SECRET_KEY: 'WORKING_SECRET_KEY',
+  EMR_LOG: 'EMR_LOG',
 };
 
 const questions = [
@@ -31,15 +32,23 @@ const questions = [
     message: 'The working aws account access key.',
   },
   {
-    type: 'input',
+    type: 'password',
     name: ConfigConstant.WORKING_SECRET_KEY,
     message: 'The working aws account secret key.',
+  },
+  {
+    type: 'input',
+    name: ConfigConstant.EMR_LOG,
+    message: 'The EMR log location in S3.',
   },
 ];
 
 export class Config {
   static get(key: string) {
     const data = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
+    if (!data[key]) {
+      throw Error(`${key} doesn't exist in ${CONFIG_PATH}.`);
+    }
     return data[key];
   }
 

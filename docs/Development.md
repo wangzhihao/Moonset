@@ -8,6 +8,7 @@ cd Moonset/
 npm install
 npx lerna bootstrap
 ./packages/cli/cli.js --help
+./packages/cli/cli.js deploy --job '{}'
 ```
 
 All packages should maintain the same version by lerna. The following are some
@@ -22,7 +23,7 @@ Here are some helper commands.
 
 ```bash
 # compile the typescript continously
-npm run watch
+npx lerna run --parallel watch
 # check the diff of this deployment and online cloudformation
 npx cdk diff --app ./build/cdk.out
 # update the dependencies in package.json

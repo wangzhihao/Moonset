@@ -10,8 +10,9 @@ export enum OP {
     EMRTask,
     MetricBegin,
     MetricEnd,
-    MetastoreSync,
-    MetastoreSyncBack,
+    InputMetastoreSync,
+    OutputMetastoreSync,
+    OutputMetastoreSyncBack,
     Asset,
 }
 /* eslint-enable */
@@ -34,7 +35,7 @@ export class DeployVisitor extends vi.SimpleVisitor<IR[]> {
   private prepareOutput(node: vi.OutputNode, context: IR[]) {
     context.push({op: OP.MetricBegin, node: node});
     if (node.dataset.glue) {
-      context.push({op: OP.MetastoreSync, node: node});
+      context.push({op: OP.OutputMetastoreSync, node: node});
     }
     context.push({op: OP.MetricEnd, node: node});
   }
@@ -42,7 +43,7 @@ export class DeployVisitor extends vi.SimpleVisitor<IR[]> {
   visitInput(node: vi.InputNode, context: IR[]) {
     context.push({op: OP.MetricBegin, node: node});
     if (node.dataset.glue) {
-      context.push({op: OP.MetastoreSync, node: node});
+      context.push({op: OP.InputMetastoreSync, node: node});
     }
     context.push({op: OP.MetricEnd, node: node});
   }
@@ -50,7 +51,7 @@ export class DeployVisitor extends vi.SimpleVisitor<IR[]> {
   visitOutput(node: vi.OutputNode, context: IR[]) {
     context.push({op: OP.MetricBegin, node: node});
     if (node.dataset.glue) {
-      context.push({op: OP.MetastoreSyncBack, node: node});
+      context.push({op: OP.OutputMetastoreSyncBack, node: node});
     }
     context.push({op: OP.MetricEnd, node: node});
   }
@@ -71,19 +72,19 @@ export class RunVisitor extends vi.SimpleVisitor<IR[]> {
 
   private prepareOutput(node: vi.OutputNode, context: IR[]) {
     if (node.dataset.glue) {
-      context.push({op: OP.MetastoreSync, node: node});
+      context.push({op: OP.OutputMetastoreSync, node: node});
     }
   }
 
   visitInput(node: vi.InputNode, context: IR[]) {
     if (node.dataset.glue) {
-      context.push({op: OP.MetastoreSync, node: node});
+      context.push({op: OP.InputMetastoreSync, node: node});
     }
   }
 
   visitOutput(node: vi.OutputNode, context: IR[]) {
     if (node.dataset.glue) {
-      context.push({op: OP.MetastoreSyncBack, node: node});
+      context.push({op: OP.OutputMetastoreSyncBack, node: node});
     }
   }
 
