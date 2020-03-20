@@ -75,12 +75,6 @@ class MoonsetJobStack extends cdk.Stack {
     const sg = new ec2.SecurityGroup(props.infraStack, 'MoonsetSG', {vpc});
     sg.addIngressRule(sg, ec2.Port.allTraffic());
 
-    new ec2.BastionHostLinux(
-        props.infraStack, 'MoonsetBastion', {
-          vpc,
-          securityGroup: sg,
-        });
-
     const ec2Role = new iam.Role(props.infraStack, MC.EMR_EC2_ROLE, {
       assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
     });
@@ -88,6 +82,9 @@ class MoonsetJobStack extends cdk.Stack {
     ec2Role.addManagedPolicy(
         iam.ManagedPolicy.fromAwsManagedPolicyName(
             'service-role/AmazonElasticMapReduceforEC2Role'));
+    ec2Role.addManagedPolicy(
+        iam.ManagedPolicy.fromAwsManagedPolicyName(
+            'AmazonSSMManagedInstanceCore'));
 
     new iam.CfnInstanceProfile(props.infraStack, MC.EMR_EC2_PROFILE, {
       roles: [ec2Role.roleName],
