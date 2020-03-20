@@ -20,6 +20,7 @@ export class Deployment {
   }
 
   private async deploy() {
+    // https://github.com/aws/aws-cdk/issues/3414
     const command = execa(`${require.resolve('aws-cdk/bin/cdk')}`, [
       'deploy',
       '*',
