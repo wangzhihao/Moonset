@@ -1,3 +1,4 @@
+cdk.context.json
 build/
 node_modules/
 lerna-debug.log*

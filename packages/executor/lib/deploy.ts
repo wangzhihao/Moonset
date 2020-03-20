@@ -6,8 +6,9 @@ import * as cdk from './cdk';
 import * as aws from 'aws-sdk';
 import * as TagAPI from 'aws-sdk/clients/resourcegroupstaggingapi';
 import {MoonsetConstants as MC} from './constants';
-import {Config, ConfigConstant as CC, logger} from '@moonset/util';
+import {Config, ConfigConstant as CC, logger, DerSe} from '@moonset/util';
 import * as execa from 'execa';
+import * as path from 'path';
 
 export class Deployment {
   private async initSDK() {
@@ -26,6 +27,24 @@ export class Deployment {
       '--requireApproval=never',
       `--tags="${MC.TAG_MOONSET_ID}=${context.id}"`, // tags all resources
       `--app=${MC.BUILD_TMP_DIR}`,
+    ], {stdio: ['ignore', 'pipe', 'pipe']});
+
+    if (command.stdout) {
+      command.stdout.pipe(process.stdout);
+    }
+    if (command.stderr) {
+      command.stderr.pipe(process.stderr);
+    }
+    await command;
+  }
+
+  private async synth(context: cdk.MoonsetProps) {
+
+    DerSe.toFile(context, path.join(MC.BUILD_TMP_DIR, MC.MOONSET_CDK_PROPS));
+
+    const command = execa(`${require.resolve('aws-cdk/bin/cdk')}`, [
+      'synth',
+       `--app="node ${path.resolve(__dirname, 'cdk', 'moonset-app.js')}"`,
     ], {stdio: ['ignore', 'pipe', 'pipe']});
 
     if (command.stdout) {
@@ -77,11 +96,7 @@ export class Deployment {
       emrApplications: ['Hive', 'Spark'],
     };
 
-    const moonsetApp = new cdk.MoonsetApp(props);
-
-    const composeTime = Date.now();
-
-    moonsetApp.app.synth();
+    await this.synth(props);
 
     const synthTime = Date.now();
 
@@ -101,8 +116,7 @@ export class Deployment {
 
     const invokeTime = Date.now();
 
-    logger.info(`Compose time: ${(composeTime - startTime) / 1000} seconds`);
-    logger.info(`Synthesis time: ${(synthTime - composeTime) / 1000} seconds`);
+    logger.info(`Synthesis time: ${(synthTime - startTime) / 1000} seconds`);
     logger.info(`Deploy time: ${(deployTime - synthTime) / 1000} seconds`);
     logger.info(`Invoke time: ${(invokeTime - deployTime) / 1000} seconds`);
     logger.info(`Total time: ${(invokeTime - startTime) / 1000} seconds`);

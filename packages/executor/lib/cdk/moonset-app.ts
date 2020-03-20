@@ -8,12 +8,16 @@ import {MetastoreSyncConstruct} from './metastore-sync';
 import * as ir from '../ir';
 // eslint-disable-next-line
 import * as vi from '../visitor';
-import {Config, ConfigConstant as CC} from '@moonset/util';
+import * as path from 'path';
+import {Config, ConfigConstant as CC, DerSe} from '@moonset/util';
 
 export class MoonsetApp {
     app: cdk.App;
 
-    constructor(props: MoonsetProps) {
+    constructor() {
+      const props = DerSe.fromFile<MoonsetProps>(
+          path.join(MC.BUILD_TMP_DIR, MC.MOONSET_CDK_PROPS));
+
       this.app = new cdk.App({outdir: MC.BUILD_TMP_DIR});
 
       // Infra Stack stores some common resources like roles for reuse purpose.
@@ -107,7 +111,7 @@ class MoonsetJobStack extends cdk.Stack {
           masterInstanceType: 'm5.xlarge',
           slaveInstanceType: 'm5.xlarge',
           ec2SubnetIds: vpc.privateSubnets.map((x) => {
-              return x.subnetId;
+            return x.subnetId;
           }),
         },
         integrationPattern: sfn.ServiceIntegrationPattern.SYNC,
@@ -200,3 +204,5 @@ class MoonsetJobStack extends cdk.Stack {
     cdk.Tag.add(emrStepFunction, MC.TAG_MOONSET_TYPE, MC.TAG_MOONSET_TYPE_SF);
   }
 }
+
+new MoonsetApp().app.synth();

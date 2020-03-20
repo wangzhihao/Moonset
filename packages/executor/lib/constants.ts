@@ -12,4 +12,5 @@ export const MoonsetConstants = {
   EMR_ROLE: 'MoonsetEmrRole',
   SCRIPT_RUNNER: 's3://elasticmapreduce/libs/script-runner/script-runner.jar',
   BUILD_TMP_DIR: './build/cdk.out',
+  MOONSET_CDK_PROPS: '.moonset.props'
 };
