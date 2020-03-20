@@ -58,14 +58,23 @@ interface MoonsetJobProps extends MoonsetProps {
 class MoonsetJobStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props: MoonsetJobProps) {
     super(scope, id, props);
-
+    
+    // https://github.com/aws/aws-cdk/issues/3704
     const vpc = new ec2.Vpc(props.infraStack, 'MoonsetVPC', {
+      maxAzs: 1,
+      natGateways: 0,
       subnetConfiguration: [
         {
-          subnetType: ec2.SubnetType.PRIVATE,
-          name: 'Private',
+          subnetType: ec2.SubnetType.ISOLATED,
+          name: 'MoonsetSubnet',
         }
       ],
+      gatewayEndpoints: {
+        DYNAMODB: {
+          service: ec2.GatewayVpcEndpointAwsService.DYNAMODB,
+          subnets: [{ subnetType: ec2.SubnetType.ISOLATED }]
+        }
+      }
     });
 
     const ec2Role = new iam.Role(props.infraStack, MC.EMR_EC2_ROLE, {
@@ -120,7 +129,7 @@ class MoonsetJobStack extends cdk.Stack {
           instanceCount: 3,
           masterInstanceType: 'm5.xlarge',
           slaveInstanceType: 'm5.xlarge',
-          ec2SubnetId: vpc.privateSubnets[0].subnetId,
+          ec2SubnetId: vpc.isolatedSubnets[0].subnetId,
         },
         integrationPattern: sfn.ServiceIntegrationPattern.SYNC,
       }),
