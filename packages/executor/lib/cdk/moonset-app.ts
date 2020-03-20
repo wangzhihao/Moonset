@@ -110,9 +110,7 @@ class MoonsetJobStack extends cdk.Stack {
           instanceCount: 3,
           masterInstanceType: 'm5.xlarge',
           slaveInstanceType: 'm5.xlarge',
-          ec2SubnetIds: vpc.privateSubnets.map((x) => {
-            return x.subnetId;
-          }),
+          ec2SubnetId: vpc.privateSubnets[0].subnetId
         },
         integrationPattern: sfn.ServiceIntegrationPattern.SYNC,
       }),
