@@ -62,13 +62,9 @@ class MoonsetJobStack extends cdk.Stack {
     const vpc = new ec2.Vpc(props.infraStack, 'MoonsetVPC', {
       subnetConfiguration: [
         {
-          subnetType: ec2.SubnetType.PUBLIC,
-          name: 'Public',
-        },
-        {
           subnetType: ec2.SubnetType.PRIVATE,
           name: 'Private',
-        },
+        }
       ],
     });
 
@@ -125,7 +121,6 @@ class MoonsetJobStack extends cdk.Stack {
           masterInstanceType: 'm5.xlarge',
           slaveInstanceType: 'm5.xlarge',
           ec2SubnetId: vpc.privateSubnets[0].subnetId,
-          additionalMasterSecurityGroups: [sg.securityGroupId],
         },
         integrationPattern: sfn.ServiceIntegrationPattern.SYNC,
       }),
