@@ -59,7 +59,18 @@ class MoonsetJobStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props: MoonsetJobProps) {
     super(scope, id, props);
 
-    const vpc = new ec2.Vpc(props.infraStack, 'MoonsetVPC');
+    const vpc = new ec2.Vpc(props.infraStack, 'MoonsetVPC', {
+      subnetConfiguration: [
+        {
+          subnetType: ec2.SubnetType.PUBLIC,
+          name: 'Public',
+        },
+        {
+          subnetType: ec2.SubnetType.PRIVATE,
+          name: 'Private',
+        },
+      ],
+    });
 
     const ec2Role = new iam.Role(props.infraStack, MC.EMR_EC2_ROLE, {
       assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
@@ -110,7 +121,7 @@ class MoonsetJobStack extends cdk.Stack {
           instanceCount: 3,
           masterInstanceType: 'm5.xlarge',
           slaveInstanceType: 'm5.xlarge',
-          ec2SubnetId: vpc.privateSubnets[0].subnetId
+          ec2SubnetId: vpc.privateSubnets[0].subnetId,
         },
         integrationPattern: sfn.ServiceIntegrationPattern.SYNC,
       }),
