@@ -16,9 +16,9 @@ export class MoonsetApp {
 
     constructor() {
       const props = DerSe.fromFile<MoonsetProps>(
-          path.join(MC.BUILD_TMP_DIR, MC.MOONSET_CDK_PROPS));
+          path.join(MC.BUILD_TMP_DIR, MC.MOONSET_PROPS));
 
-      this.app = new cdk.App({outdir: MC.BUILD_TMP_DIR});
+      this.app = new cdk.App();
 
       // Infra Stack stores some common resources like roles for reuse purpose.
       const infraStack = new cdk.Stack(this.app, MC.INFRA_STACK, {

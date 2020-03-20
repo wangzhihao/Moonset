@@ -26,7 +26,7 @@ export class Deployment {
       '*',
       '--requireApproval=never',
       `--tags="${MC.TAG_MOONSET_ID}=${context.id}"`, // tags all resources
-      `--app=${MC.BUILD_TMP_DIR}`,
+        `--app=${path.join(MC.BUILD_TMP_DIR, MC.CDK_OUT_DIR)}`,
     ], {stdio: ['ignore', 'pipe', 'pipe']});
 
     if (command.stdout) {
@@ -40,11 +40,12 @@ export class Deployment {
 
   private async synth(context: cdk.MoonsetProps) {
 
-    DerSe.toFile(context, path.join(MC.BUILD_TMP_DIR, MC.MOONSET_CDK_PROPS));
+    DerSe.toFile(context, path.join(MC.BUILD_TMP_DIR, MC.MOONSET_PROPS));
 
     const command = execa(`${require.resolve('aws-cdk/bin/cdk')}`, [
       'synth',
        `--app="node ${path.resolve(__dirname, 'cdk', 'moonset-app.js')}"`,
+       `--output=${path.join(MC.BUILD_TMP_DIR, MC.CDK_OUT_DIR)}`
     ], {stdio: ['ignore', 'pipe', 'pipe']});
 
     if (command.stdout) {
