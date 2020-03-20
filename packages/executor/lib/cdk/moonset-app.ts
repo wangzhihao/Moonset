@@ -9,13 +9,13 @@ import * as ir from '../ir';
 // eslint-disable-next-line
 import * as vi from '../visitor';
 import * as path from 'path';
-import {Config, ConfigConstant as CC, DerSe} from '@moonset/util';
+import {Config, ConfigConstant as CC, Serde} from '@moonset/util';
 
 export class MoonsetApp {
     app: cdk.App;
 
     constructor() {
-      const props = DerSe.fromFile<MoonsetProps>(
+      const props = Serde.fromFile<MoonsetProps>(
           path.join(MC.BUILD_TMP_DIR, MC.MOONSET_PROPS));
 
       this.app = new cdk.App();

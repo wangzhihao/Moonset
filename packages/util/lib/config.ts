@@ -1,4 +1,4 @@
-import {DerSe} from './derse';
+import {Serde} from './serde';
 import * as inquirer from 'inquirer';
 import * as os from 'os';
 import * as path from 'path';
@@ -45,7 +45,7 @@ const questions = [
 
 export class Config {
   static get(key: string) {
-    const data = DerSe.fromFile<{[k: string]: string}>(CONFIG_PATH);
+    const data = Serde.fromFile<{[k: string]: string}>(CONFIG_PATH);
     if (!data[key]) {
       throw Error(`${key} doesn't exist in ${CONFIG_PATH}.`);
     }
@@ -55,7 +55,7 @@ export class Config {
   static ask() {
     inquirer.prompt(questions).then((answers) => {
       console.log(`Write into ${CONFIG_PATH}`);
-      DerSe.toFile(answers, CONFIG_PATH);
+      Serde.toFile(answers, CONFIG_PATH);
     });
   }
 }

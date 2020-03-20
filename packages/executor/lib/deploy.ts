@@ -6,7 +6,7 @@ import * as cdk from './cdk';
 import * as aws from 'aws-sdk';
 import * as TagAPI from 'aws-sdk/clients/resourcegroupstaggingapi';
 import {MoonsetConstants as MC} from './constants';
-import {Config, ConfigConstant as CC, logger, DerSe} from '@moonset/util';
+import {Config, ConfigConstant as CC, logger, Serde} from '@moonset/util';
 import * as execa from 'execa';
 import * as path from 'path';
 
@@ -40,7 +40,7 @@ export class Deployment {
 
   private async synth(context: cdk.MoonsetProps) {
 
-    DerSe.toFile(context, path.join(MC.BUILD_TMP_DIR, MC.MOONSET_PROPS));
+    Serde.toFile(context, path.join(MC.BUILD_TMP_DIR, MC.MOONSET_PROPS));
 
     const command = execa(`${require.resolve('aws-cdk/bin/cdk')}`, [
       'synth',
