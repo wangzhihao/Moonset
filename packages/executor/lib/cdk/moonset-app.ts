@@ -127,7 +127,6 @@ class MoonsetJobStack extends cdk.Stack {
           instanceCount: 3,
           masterInstanceType: 'm5.xlarge',
           slaveInstanceType: 'm5.xlarge',
-          ec2KeyName: Config.get(CC.EMR_KEY_PAIR),
           ec2SubnetId: vpc.privateSubnets[0].subnetId,
           additionalMasterSecurityGroups: [sg.securityGroupId],
         },
