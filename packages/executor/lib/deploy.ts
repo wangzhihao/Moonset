@@ -19,14 +19,12 @@ export class Deployment {
     }
   }
 
-  private async deploy(context: cdk.MoonsetProps) {
-    // Deploy
+  private async deploy() {
     const command = execa(`${require.resolve('aws-cdk/bin/cdk')}`, [
       'deploy',
       '*',
       '--requireApproval=never',
-      `--tags="${MC.TAG_MOONSET_ID}=${context.id}"`, // tags all resources
-        `--app=${path.join(MC.BUILD_TMP_DIR, MC.CDK_OUT_DIR)}`,
+      `--app=${path.join(MC.BUILD_TMP_DIR, MC.CDK_OUT_DIR)}`,
     ], {stdio: ['ignore', 'pipe', 'pipe']});
 
     if (command.stdout) {
@@ -38,10 +36,7 @@ export class Deployment {
     await command;
   }
 
-  private async synth(context: cdk.MoonsetProps) {
-
-    Serde.toFile(context, path.join(MC.BUILD_TMP_DIR, MC.MOONSET_PROPS));
-
+  private async synth() {
     const command = execa(`${require.resolve('aws-cdk/bin/cdk')}`, [
       'synth',
        `--app="node ${path.resolve(__dirname, 'cdk', 'moonset-app.js')}"`,
@@ -97,10 +92,11 @@ export class Deployment {
       emrApplications: ['Hive', 'Spark'],
     };
 
-    await this.synth(props);
+    Serde.toFile(props, path.join(MC.BUILD_TMP_DIR, MC.MOONSET_PROPS));
+
+    await this.synth();
 
     const synthTime = Date.now();
-
 
     // Before creating a change set, cdk deploy will compare the template and
     // tags of the currently deployed stack to the template and tags that are
@@ -109,7 +105,7 @@ export class Deployment {
     // TODO However, since our tags contains UUID. every time it will redeploy
     // even the template is identical. We might need to change UUID to a
     // stable but unique tag.
-    await this.deploy(props);
+    await this.deploy();
 
     const deployTime = Date.now();
 

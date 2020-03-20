@@ -202,6 +202,7 @@ class MoonsetJobStack extends cdk.Stack {
       definition: chain,
     });
     cdk.Tag.add(emrStepFunction, MC.TAG_MOONSET_TYPE, MC.TAG_MOONSET_TYPE_SF);
+    cdk.Tag.add(emrStepFunction, MC.TAG_MOONSET_ID, props.id);
   }
 }
 
