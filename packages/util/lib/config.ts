@@ -12,6 +12,7 @@ export const ConfigConstant = {
   WORKING_ACCESS_KEY: 'WORKING_ACCESS_KEY',
   WORKING_SECRET_KEY: 'WORKING_SECRET_KEY',
   EMR_LOG: 'EMR_LOG',
+  EMR_KEY_PAIR: 'EMR_KEY_PAIR',
 };
 
 const questions = [
@@ -40,6 +41,11 @@ const questions = [
     type: 'input',
     name: ConfigConstant.EMR_LOG,
     message: 'The EMR log location in S3.',
+  },
+  {
+    type: 'input',
+    name: ConfigConstant.EMR_KEY_PAIR,
+    message: 'The EMR Key Pair.',
   },
 ];
 
