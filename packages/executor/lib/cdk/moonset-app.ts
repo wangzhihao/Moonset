@@ -72,9 +72,6 @@ class MoonsetJobStack extends cdk.Stack {
       ],
     });
 
-    const sg = new ec2.SecurityGroup(props.infraStack, 'MoonsetSG', {vpc});
-    sg.addIngressRule(sg, ec2.Port.allTraffic());
-
     const ec2Role = new iam.Role(props.infraStack, MC.EMR_EC2_ROLE, {
       assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
     });
