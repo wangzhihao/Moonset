@@ -72,6 +72,11 @@ class MoonsetJobStack extends cdk.Stack {
       ],
     });
 
+    const sg = new ec2.SecurityGroup(props.infraStack, 'MoonsetSG', {
+      vpc: vpc,
+    });
+    sg.addIngressRule(sg, ec2.Port.allTraffic());
+
     const ec2Role = new iam.Role(props.infraStack, MC.EMR_EC2_ROLE, {
       assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
     });
@@ -123,6 +128,7 @@ class MoonsetJobStack extends cdk.Stack {
           slaveInstanceType: 'm5.xlarge',
           ec2KeyName: Config.get(CC.EMR_KEY_PAIR),
           ec2SubnetId: vpc.privateSubnets[0].subnetId,
+          additionalMasterSecurityGroups: [sg.securityGroupId],
         },
         integrationPattern: sfn.ServiceIntegrationPattern.SYNC,
       }),
