@@ -3,6 +3,7 @@ import * as sfnTasks from '@aws-cdk/aws-stepfunctions-tasks';
 import * as iam from '@aws-cdk/aws-iam';
 import * as cdk from '@aws-cdk/core';
 import {MoonsetConstants as MC} from '../constants';
+import {MetastoreSyncConstruct} from './metastore-sync';
 import * as ir from '../ir';
 // eslint-disable-next-line
 import * as vi from '../visitor';
@@ -86,7 +87,7 @@ class MoonsetJobStack extends cdk.Stack {
     const emrCreateTask = new sfn.Task(this, 'emrCluster', {
       task: new sfnTasks.EmrCreateCluster({
         visibleToAllUsers: true,
-        logUri: 's3://moonset/emr/',
+        logUri: Config.get(CC.EMR_LOG),
         clusterRole: ec2Role,
         name: sfn.Data.stringAt('$.EmrSettings.ClusterName'),
         serviceRole: emrRole,
@@ -110,9 +111,10 @@ class MoonsetJobStack extends cdk.Stack {
 
     chain = chain.next(emrCreateTask);
 
-    for (const command of props.commands) {
+    for (let i = 0; i < props.commands.length; i++) {
+      const command = props.commands[i];
       switch (command.op) {
-        case ir.OP.EMRTask:
+        case ir.OP.EMRTask: {
           const task = (<vi.TaskNode>command.node).task;
 
           if (task.hive) {
@@ -123,7 +125,7 @@ class MoonsetJobStack extends cdk.Stack {
               task: new sfnTasks.EmrAddStep({
                 clusterId: sfn.Data.stringAt('$.EmrSettings.ClusterId'),
                 name: 'HiveTask',
-                jar: 's3://elasticmapreduce/libs/script-runner/script-runner.jar',
+                jar: MC.SCRIPT_RUNNER,
                 args: [
                   's3://elasticmapreduce/libs/hive/hive-script',
                   '--run-hive-script',
@@ -139,8 +141,50 @@ class MoonsetJobStack extends cdk.Stack {
             chain = chain.next(emrTask);
           }
           break;
+        }
+        case ir.OP.InputMetastoreSync: {
+          const dataset = (<vi.InputNode>command.node).dataset;
+          if (!dataset.glue) {
+            throw Error('Only Glue dataset can use metastore sync.');
+          }
+          const task = new MetastoreSyncConstruct(this, `op-${i}`, {
+            db: dataset.glue.db!,
+            table: dataset.glue.table!,
+            source: 'datacatalog',
+            partition: dataset.glue.partition!,
+          }).task;
+          chain = chain.next(task);
+          break;
+        }
+        case ir.OP.OutputMetastoreSync: {
+          const dataset = (<vi.OutputNode>command.node).dataset;
+          if (!dataset.glue) {
+            throw Error('Only Glue dataset can use metastore sync.');
+          }
+          const task = new MetastoreSyncConstruct(this, `op-${i}`, {
+            db: dataset.glue.db!,
+            table: dataset.glue.table!,
+            source: 'datacatalog',
+          }).task;
+          chain = chain.next(task);
+          break;
+        }
+        case ir.OP.OutputMetastoreSyncBack: {
+          const dataset = (<vi.OutputNode>command.node).dataset;
+          if (!dataset.glue) {
+            throw Error('Only Glue dataset can use metastore sync.');
+          }
+          const task = new MetastoreSyncConstruct(this, `op-${i}`, {
+            db: dataset.glue.db!,
+            table: dataset.glue.table!,
+            source: 'hive',
+            partition: dataset.glue.partition!,
+          }).task;
+          chain = chain.next(task);
+          break;
+        }
         default:
-                    // console.log("To be supported, no-op for now.")
+          // console.log("To be supported, no-op for now.")
       }
     }
 

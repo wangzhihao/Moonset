@@ -11,13 +11,13 @@ npx moonset config
 # run a job
 npx moonset deploy --job '{
     "input": [
-      {"glue": { "dbName": "foo", "tableName": "apple"}}
+      {"glue": { "db": "foo", "table": "apple"}}
     ],
     "task": [
       {"hive": {"sqlFile": "s3://foo/hive.sql"}}
     ],
     "output": [
-      {"glue": { "dbName": "foo", "tableName": "orange"}}
+      {"glue": { "db": "foo", "table": "orange"}}
     ]
 }' 
 

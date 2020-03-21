@@ -23,8 +23,7 @@ export class Executor {
       const obj = JSON.parse(x);
       const err = Job.verify(obj);
       if (err) {
-        logger.error('Bad Input:', err);
-        process.exit(-1);
+        throw new Error('Bad Input: ' + err);
       }
       return Job.create(obj);
     });
