@@ -197,6 +197,7 @@ class MoonsetJobStack extends cdk.Stack {
             db: dataset.glue.db!,
             table: dataset.glue.table!,
             source: 'datacatalog',
+            partition: dataset.glue.partition!,
           }).task;
           chain = chain.next(task);
           break;
