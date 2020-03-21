@@ -8,6 +8,7 @@ import {MetastoreSyncConstruct} from './metastore-sync';
 import * as ir from '../ir';
 // eslint-disable-next-line
 import * as vi from '../visitor';
+import {StringAsset, FileAsset} from './asset';
 import * as path from 'path';
 import {Config, ConfigConstant as CC, Serde} from '@moonset/util';
 
@@ -136,10 +137,23 @@ class MoonsetJobStack extends cdk.Stack {
           const task = (<vi.TaskNode>command.node).task;
 
           if (task.hive) {
-            if (!task.hive.sqlFile) {
-              throw Error('The hive sqlFile is required field.');
+            let s3File;
+            if (task.hive.sqlFile) {
+              s3File = task.hive.sqlFile;
+              if (!task.hive.sqlFile.startsWith('s3://')) {
+                s3File = new FileAsset(this, `op-${i}-sql`, {
+                  path: task.hive.sqlFile,
+                }).getS3Path();
+              }
+            } else if (task.hive.sql) {
+              s3File = new StringAsset(this, `op-${i}-sql`, {
+                content: task.hive.sql,
+              }).getS3Path();
+            } else {
+              throw Error('Either sqlFile or sql must exist for hive.');
             }
-            const emrTask = new sfn.Task(this, 'emrTask', {
+
+              const emrTask = new sfn.Task(this, `op-${i}-HiveTask`, {
               task: new sfnTasks.EmrAddStep({
                 clusterId: sfn.Data.stringAt('$.EmrSettings.ClusterId'),
                 name: 'HiveTask',
@@ -149,7 +163,7 @@ class MoonsetJobStack extends cdk.Stack {
                   '--run-hive-script',
                   '--args',
                   '-f',
-                  task.hive.sqlFile,
+                  s3File,
                 ],
                 actionOnFailure: sfnTasks.ActionOnFailure.TERMINATE_CLUSTER,
                 integrationPattern: sfn.ServiceIntegrationPattern.SYNC,
