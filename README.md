@@ -21,20 +21,17 @@ npx moonset config
 npx moonset deploy --job '{
     "input": [{
         "glue": { "db": "foo", "table": "apple", "partition": {"region_id": "1", "snapshot_date": "2020-01-01"}}
-    },{
-        "glue": { "db": "foo", "table": "orange", "partition": {"region_id": "1", "snapshot_date": "2020-01-01"}}
     }],
     "task": [{
-        "hive": {"sqlFile": "s3://foo/hive.sql"}
+        "hive": {"sql": "insert overwrite table foo.pineapple partition (region_id=1, snapshot_date=\"2020-01-01\") select foo from foo.apple;"}
     }],
     "output": [{
         "glue": { "db": "foo", "table": "pineapple", "partition": {"region_id": "1", "snapshot_date": "2020-01-01"}}
     }]
 }'
-
 ```
 
-All resources is managed by AWS CDK so there is minimum effort for
+All resources are managed by AWS CDK so there is minimum effort for
 infrastructure setup. You can run it in a brand new account.
 
 The EMR is created in a VPC's private subnet, You can connect to both master

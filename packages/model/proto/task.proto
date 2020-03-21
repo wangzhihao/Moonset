@@ -9,6 +9,7 @@ message Task {
 
 message Hive {
     string sql_file = 1;
+    string sql = 2;
 }
 
 message Spark {

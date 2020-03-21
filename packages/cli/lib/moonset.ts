@@ -5,7 +5,7 @@ import {Config, ConfigConstant as CC, logger} from '@moonset/util';
 export class Moonset {
   async run() {
     const argv = yargs
-        .command(['config'], 'configure the crendentials.')
+        .command(['config'], 'Configure the crendentials.')
         .command(['deploy'], 'Deploy the job.',
             (yargs) => yargs
                 .option('job', {type: 'string', desc: 'job payload',
