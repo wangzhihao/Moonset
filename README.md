@@ -19,16 +19,18 @@ npx moonset config
 
 # run a job
 npx moonset deploy --job '{
-    "input": [
-      {"glue": { "db": "foo", "table": "apple"}}
-    ],
-    "task": [
-      {"hive": {"sqlFile": "s3://foo/hive.sql"}}
-    ],
-    "output": [
-      {"glue": { "db": "foo", "table": "orange"}}
-    ]
-}' 
+    "input": [{
+        "glue": { "db": "foo", "table": "apple", "partition": {"region_id": "1", "snapshot_date": "2020-01-01"}}
+    },{
+        "glue": { "db": "foo", "table": "orange", "partition": {"region_id": "1", "snapshot_date": "2020-01-01"}}
+    }],
+    "task": [{
+        "hive": {"sqlFile": "s3://foo/hive.sql"}
+    }],
+    "output": [{
+        "glue": { "db": "foo", "table": "pineapple", "partition": {"region_id": "1", "snapshot_date": "2020-01-01"}}
+    }]
+}'
 
 ```
 
