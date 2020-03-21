@@ -2,18 +2,23 @@ import * as sfn from '@aws-cdk/aws-stepfunctions';
 import * as sfnTasks from '@aws-cdk/aws-stepfunctions-tasks';
 import * as iam from '@aws-cdk/aws-iam';
 import * as cdk from '@aws-cdk/core';
+import * as ec2 from '@aws-cdk/aws-ec2';
 import {MoonsetConstants as MC} from '../constants';
 import {MetastoreSyncConstruct} from './metastore-sync';
 import * as ir from '../ir';
 // eslint-disable-next-line
 import * as vi from '../visitor';
-import {Config, ConfigConstant as CC} from '@moonset/util';
+import * as path from 'path';
+import {Config, ConfigConstant as CC, Serde} from '@moonset/util';
 
 export class MoonsetApp {
     app: cdk.App;
 
-    constructor(props: MoonsetProps) {
-      this.app = new cdk.App({outdir: MC.BUILD_TMP_DIR});
+    constructor() {
+      const props = Serde.fromFile<MoonsetProps>(
+          path.join(MC.BUILD_TMP_DIR, MC.MOONSET_PROPS));
+
+      this.app = new cdk.App();
 
       // Infra Stack stores some common resources like roles for reuse purpose.
       const infraStack = new cdk.Stack(this.app, MC.INFRA_STACK, {
@@ -54,6 +59,14 @@ class MoonsetJobStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props: MoonsetJobProps) {
     super(scope, id, props);
 
+    // https://github.com/aws/aws-cdk/issues/3704
+    const vpc = new ec2.Vpc(props.infraStack, 'MoonsetVPC', {
+      maxAzs: 1,
+    });
+
+    const sg = new ec2.SecurityGroup(props.infraStack, 'MoonsetSG', {vpc});
+    sg.addIngressRule(sg, ec2.Port.allTraffic());
+
     const ec2Role = new iam.Role(props.infraStack, MC.EMR_EC2_ROLE, {
       assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
     });
@@ -61,6 +74,9 @@ class MoonsetJobStack extends cdk.Stack {
     ec2Role.addManagedPolicy(
         iam.ManagedPolicy.fromAwsManagedPolicyName(
             'service-role/AmazonElasticMapReduceforEC2Role'));
+    ec2Role.addManagedPolicy(
+        iam.ManagedPolicy.fromAwsManagedPolicyName(
+            'AmazonSSMManagedInstanceCore'));
 
     new iam.CfnInstanceProfile(props.infraStack, MC.EMR_EC2_PROFILE, {
       roles: [ec2Role.roleName],
@@ -103,6 +119,8 @@ class MoonsetJobStack extends cdk.Stack {
           instanceCount: 3,
           masterInstanceType: 'm5.xlarge',
           slaveInstanceType: 'm5.xlarge',
+          ec2SubnetId: vpc.privateSubnets[0].subnetId,
+          additionalMasterSecurityGroups: [sg.securityGroupId],
         },
         integrationPattern: sfn.ServiceIntegrationPattern.SYNC,
       }),
@@ -192,5 +210,8 @@ class MoonsetJobStack extends cdk.Stack {
       definition: chain,
     });
     cdk.Tag.add(emrStepFunction, MC.TAG_MOONSET_TYPE, MC.TAG_MOONSET_TYPE_SF);
+    cdk.Tag.add(emrStepFunction, MC.TAG_MOONSET_ID, props.id);
   }
 }
+
+new MoonsetApp().app.synth();

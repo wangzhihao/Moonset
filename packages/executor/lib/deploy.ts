@@ -6,8 +6,9 @@ import * as cdk from './cdk';
 import * as aws from 'aws-sdk';
 import * as TagAPI from 'aws-sdk/clients/resourcegroupstaggingapi';
 import {MoonsetConstants as MC} from './constants';
-import {Config, ConfigConstant as CC, logger} from '@moonset/util';
+import {Config, ConfigConstant as CC, logger, Serde} from '@moonset/util';
 import * as execa from 'execa';
+import * as path from 'path';
 
 export class Deployment {
   private async initSDK() {
@@ -18,14 +19,29 @@ export class Deployment {
     }
   }
 
-  private async deploy(context: cdk.MoonsetProps) {
-    // Deploy
+  private async deploy() {
+    // https://github.com/aws/aws-cdk/issues/3414
     const command = execa(`${require.resolve('aws-cdk/bin/cdk')}`, [
       'deploy',
       '*',
       '--requireApproval=never',
-      `--tags="${MC.TAG_MOONSET_ID}=${context.id}"`, // tags all resources
-      `--app=${MC.BUILD_TMP_DIR}`,
+      `--app=${path.join(MC.BUILD_TMP_DIR, MC.CDK_OUT_DIR)}`,
+    ], {stdio: ['ignore', 'pipe', 'pipe']});
+
+    if (command.stdout) {
+      command.stdout.pipe(process.stdout);
+    }
+    if (command.stderr) {
+      command.stderr.pipe(process.stderr);
+    }
+    await command;
+  }
+
+  private async synth() {
+    const command = execa(`${require.resolve('aws-cdk/bin/cdk')}`, [
+      'synth',
+       `--app="node ${path.resolve(__dirname, 'cdk', 'moonset-app.js')}"`,
+       `--output=${path.join(MC.BUILD_TMP_DIR, MC.CDK_OUT_DIR)}`
     ], {stdio: ['ignore', 'pipe', 'pipe']});
 
     if (command.stdout) {
@@ -77,14 +93,11 @@ export class Deployment {
       emrApplications: ['Hive', 'Spark'],
     };
 
-    const moonsetApp = new cdk.MoonsetApp(props);
+    Serde.toFile(props, path.join(MC.BUILD_TMP_DIR, MC.MOONSET_PROPS));
 
-    const composeTime = Date.now();
-
-    moonsetApp.app.synth();
+    await this.synth();
 
     const synthTime = Date.now();
-
 
     // Before creating a change set, cdk deploy will compare the template and
     // tags of the currently deployed stack to the template and tags that are
@@ -93,7 +106,7 @@ export class Deployment {
     // TODO However, since our tags contains UUID. every time it will redeploy
     // even the template is identical. We might need to change UUID to a
     // stable but unique tag.
-    await this.deploy(props);
+    await this.deploy();
 
     const deployTime = Date.now();
 
@@ -101,8 +114,7 @@ export class Deployment {
 
     const invokeTime = Date.now();
 
-    logger.info(`Compose time: ${(composeTime - startTime) / 1000} seconds`);
-    logger.info(`Synthesis time: ${(synthTime - composeTime) / 1000} seconds`);
+    logger.info(`Synthesis time: ${(synthTime - startTime) / 1000} seconds`);
     logger.info(`Deploy time: ${(deployTime - synthTime) / 1000} seconds`);
     logger.info(`Invoke time: ${(invokeTime - deployTime) / 1000} seconds`);
     logger.info(`Total time: ${(invokeTime - startTime) / 1000} seconds`);

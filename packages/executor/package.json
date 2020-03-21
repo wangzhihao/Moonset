@@ -1,6 +1,6 @@
 {
   "name": "@moonset/executor",
-  "version": "0.0.9",
+  "version": "0.0.11",
   "description": "The Moonset Executor",
   "keywords": [
     "AWS",
@@ -15,7 +15,8 @@
     "test": "__tests__"
   },
   "files": [
-    "lib"
+    "lib",
+    "script"
   ],
   "repository": {
     "type": "git",
@@ -40,8 +41,8 @@
     "@aws-cdk/aws-stepfunctions": "^1.27.0",
     "@aws-cdk/aws-stepfunctions-tasks": "^1.27.0",
     "@aws-cdk/core": "^1.27.0",
-    "@moonset/model": "^0.0.9",
-    "@moonset/util": "^0.0.9",
+    "@moonset/model": "^0.0.11",
+    "@moonset/util": "^0.0.11",
     "@types/node": "^13.9.0",
     "@types/uuid": "^7.0.0",
     "aws-cdk": "^1.27.0",
