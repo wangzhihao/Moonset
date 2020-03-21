@@ -34,3 +34,9 @@ npx moonset deploy --job '{
 
 All resources is managed by AWS CDK so there is minimum effort for
 infrastructure setup. You can run it in a brand new account.
+
+The EMR is created in a VPC's private subnet, You can connect to both master
+and slave nodes via AWS Session Manager. No ssh key pair or bastion is needed.
+Follow [this guide](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-sessions-start.html)
+to start a session to connect to EMR's instances.
+

@@ -1,5 +1,5 @@
+import {Serde} from './serde';
 import * as inquirer from 'inquirer';
-import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 
@@ -45,7 +45,7 @@ const questions = [
 
 export class Config {
   static get(key: string) {
-    const data = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
+    const data = Serde.fromFile<{[k: string]: string}>(CONFIG_PATH);
     if (!data[key]) {
       throw Error(`${key} doesn't exist in ${CONFIG_PATH}.`);
     }
@@ -55,8 +55,7 @@ export class Config {
   static ask() {
     inquirer.prompt(questions).then((answers) => {
       console.log(`Write into ${CONFIG_PATH}`);
-      const content = JSON.stringify(answers, null, 4);
-      fs.writeFileSync(CONFIG_PATH, content, 'utf8');
+      Serde.toFile(answers, CONFIG_PATH);
     });
   }
 }
