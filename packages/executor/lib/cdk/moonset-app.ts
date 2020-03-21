@@ -74,6 +74,10 @@ class MoonsetJobStack extends cdk.Stack {
           service: ec2.GatewayVpcEndpointAwsService.DYNAMODB,
           subnets: [{subnetType: ec2.SubnetType.ISOLATED}],
         },
+        S3: {
+          service: ec2.GatewayVpcEndpointAwsService.S3,
+          subnets: [{subnetType: ec2.SubnetType.ISOLATED}],
+        },
       },
     });
 
