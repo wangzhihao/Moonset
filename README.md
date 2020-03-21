@@ -42,3 +42,8 @@ and slave nodes via AWS Session Manager. No ssh key pair or bastion is needed.
 Follow [this guide](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-sessions-start.html)
 to start a session to connect to EMR's instances.
 
+## License
+
+Moonset is distributed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0).
+
+See [LICENSE](./LICENSE) for more information.
