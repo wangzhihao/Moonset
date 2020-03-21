@@ -62,24 +62,10 @@ class MoonsetJobStack extends cdk.Stack {
     // https://github.com/aws/aws-cdk/issues/3704
     const vpc = new ec2.Vpc(props.infraStack, 'MoonsetVPC', {
       maxAzs: 1,
-      natGateways: 0,
-      subnetConfiguration: [
-        {
-          subnetType: ec2.SubnetType.ISOLATED,
-          name: 'MoonsetSubnet',
-        },
-      ],
-      gatewayEndpoints: {
-        DYNAMODB: {
-          service: ec2.GatewayVpcEndpointAwsService.DYNAMODB,
-          subnets: [{subnetType: ec2.SubnetType.ISOLATED}],
-        },
-        S3: {
-          service: ec2.GatewayVpcEndpointAwsService.S3,
-          subnets: [{subnetType: ec2.SubnetType.ISOLATED}],
-        },
-      },
     });
+
+    const sg = new ec2.SecurityGroup(props.infraStack, 'MoonsetSG', {vpc});
+    sg.addIngressRule(sg, ec2.Port.allTraffic());
 
     const ec2Role = new iam.Role(props.infraStack, MC.EMR_EC2_ROLE, {
       assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
@@ -133,7 +119,8 @@ class MoonsetJobStack extends cdk.Stack {
           instanceCount: 3,
           masterInstanceType: 'm5.xlarge',
           slaveInstanceType: 'm5.xlarge',
-          ec2SubnetId: vpc.isolatedSubnets[0].subnetId,
+          ec2SubnetId: vpc.privateSubnets[0].subnetId,
+          additionalMasterSecurityGroups: [sg.securityGroupId],
         },
         integrationPattern: sfn.ServiceIntegrationPattern.SYNC,
       }),
