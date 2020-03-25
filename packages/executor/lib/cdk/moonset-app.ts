@@ -153,7 +153,7 @@ class MoonsetJobStack extends cdk.Stack {
               throw Error('Either sqlFile or sql must exist for hive.');
             }
 
-              const emrTask = new sfn.Task(this, `op-${i}-HiveTask`, {
+            const emrTask = new sfn.Task(this, `op-${i}-HiveTask`, {
               task: new sfnTasks.EmrAddStep({
                 clusterId: sfn.Data.stringAt('$.EmrSettings.ClusterId'),
                 name: 'HiveTask',
