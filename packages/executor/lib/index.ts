@@ -11,10 +11,10 @@ export class Executor {
   async deploy(job: any) {
     await new Deployment().start(this.getRootNode(job));
   }
-  ir(job: any): ir.IR[] {
+  ir(job: any): ir.IR2[] {
     const root = this.getRootNode(job);
-    const states: ir.IR[] = [];
-    root.accept(new ir.DeployVisitor(), states);
+    const states: ir.IR2[] = [];
+    root.accept(new ir.RunVisitor(), states);
     return states;
   }
   private getRootNode(job: any): vi.RootNode {
