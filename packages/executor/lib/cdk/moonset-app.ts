@@ -78,6 +78,11 @@ class MoonsetJobStack extends cdk.Stack {
     ec2Role.addManagedPolicy(
         iam.ManagedPolicy.fromAwsManagedPolicyName(
             'AmazonSSMManagedInstanceCore'));
+    ec2Role.addToPolicy(
+        new iam.PolicyStatement({
+          actions: ['kms:*'],
+          resources: ['*'],
+        }));
 
     new iam.CfnInstanceProfile(props.infraStack, MC.EMR_EC2_PROFILE, {
       roles: [ec2Role.roleName],
@@ -91,6 +96,12 @@ class MoonsetJobStack extends cdk.Stack {
     emrRole.addManagedPolicy(
         iam.ManagedPolicy.fromAwsManagedPolicyName(
             'service-role/AmazonElasticMapReduceRole'));
+
+    new iam.CfnServiceLinkedRole(this, 'AWSServiceRoleForEMRCleanup', {
+      awsServiceName: 'elasticmapreduce.amazonaws.com',
+      // eslint-disable-next-line
+      description: 'Allows EMR to terminate instances and delete resources from EC2 on your behalf.',
+    });
 
     const emrSettings = new sfn.Pass(this, 'emrSettings', {
       result: sfn.Result.fromObject({
