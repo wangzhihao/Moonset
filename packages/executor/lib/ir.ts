@@ -7,7 +7,7 @@ export interface IR {
 
 export interface IR2 {
     readonly op: string;
-    readonly node: vi.Node;
+    readonly args: any[];
 }
 
 /*eslint-disable */
@@ -69,19 +69,8 @@ export class DeployVisitor extends vi.SimpleVisitor<IR[]> {
 }
 
 
-export class RunVisitor extends vi.SimpleVisitor<IR2[]> {
-  visitJob(node: vi.JobNode, context: IR2[]) {
-    context.push({op: `emr.setup`, node: node});
-    node.outputs.map((x) => this.prepareOutput(<vi.OutputNode>x, context));
-    this.visit(node, context);
-  }
 
-  private prepareOutput(node: vi.OutputNode, context: IR2[]) {
-    const type = this.getType(node.dataset);
-    context.push({op: `data.${type}.import.to.emr`, node: node});
-  }
-
-  private getType(dataset: any): string {
+function getType(dataset: any): string {
     const keys = Object.keys(dataset);
     if(keys.length != 1) {
         throw Error(`Invalid input. The object should contain only one key. But the keys are ${keys}`);
@@ -89,18 +78,55 @@ export class RunVisitor extends vi.SimpleVisitor<IR2[]> {
     return keys[0];
   }
 
+export class RunVisitor extends vi.SimpleVisitor<IR2[]> {
+
+    readonly platform : 'emr';
+
+  visitJob(node: vi.JobNode, context: IR2[]) {
+    context.push({op: `platform.${this.platform}.init`, args: []});
+
+    const dataTypes = new Set();
+    const taskTypes = new Set();
+
+    node.inputs.forEach((x) => {
+        dataTypes.add(getType(x));
+    });
+    node.outputs.forEach((x) => {
+        dataTypes.add(getType(x));
+    });
+    node.tasks.forEach((x) => {
+        taskTypes.add(getType(x));
+    });
+
+    dataTypes.forEach((type) => {
+        context.push({op: `data.${type}.init`, args: []});
+    });
+    taskTypes.forEach((type) => {
+        context.push({op: `task.${type}.init`, args: []});
+    });
+
+    node.outputs.map((x) => this.prepareOutput(<vi.OutputNode>x, context));
+
+    this.visit(node, context);
+  }
+
+  private prepareOutput(node: vi.OutputNode, context: IR2[]) {
+    const type = getType(node.dataset);
+    context.push({op: `data.${type}.import`, args: [node, this.platform]});
+  }
+
   visitInput(node: vi.InputNode, context: IR2[]) {
-    const type = this.getType(node.dataset);
-    context.push({op: `data.${type}.import.to.emr`, node: node});
+    const type = getType(node.dataset);
+    context.push({op: `data.${type}.import`, args: [node, this.platform]});
   }
 
   visitOutput(node: vi.OutputNode, context: IR2[]) {
-    const type = this.getType(node.dataset);
-    context.push({op: `data.${type}.export.from.emr`, node: node});
+    const type = getType(node.dataset);
+    context.push({op: `data.${type}.export`, args: [node, this.platform]});
   }
 
   visitTask(node: vi.TaskNode, context: IR2[]) {
-    const type = this.getType(node.task);
-    context.push({op: `task.${type}.execute.on.emr`, node: node});
+    const type = getType(node.task);
+    context.push({op: `task.${type}.execute`, args: [node, this.platform]});
   }
 }
