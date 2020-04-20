@@ -33,7 +33,7 @@ export class Moonset {
         await new Executor().deploy(argv.job);
         return;
       case 'run':
-        logger.info('Not implemented yet.');
+        await new Executor().run(argv.job);
         return;
       case 'ir':
         const states = new Executor().ir(argv.job);
