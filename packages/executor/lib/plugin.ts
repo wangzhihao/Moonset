@@ -21,17 +21,8 @@ export interface PlatformPlugin {
   type: string;
 
   init: (host: PluginHost) => void;
-}
 
-export interface TaskPlugin {
-
-  version: '1';
-
-  type: string;
-
-  init: (host: PluginHost, platform: string) => void;
-
-  execute: (host: PluginHost, platform: string, data: any) => sfn.IChainable;
+  execute: (host: PluginHost, taskType: string, data: any) => sfn.IChainable;
 }
 
 export class PluginHost {
@@ -62,9 +53,7 @@ export class PluginHost {
           this.hooks[`data.${plugin.type}.export`] = plugin.export;
       } else if (isPlatformPlugin(plugin)) {
           this.hooks[`platform.${plugin.type}.init`] = plugin.init;
-      } else if (isTaskPlugin(plugin)) {
-          this.hooks[`task.${plugin.type}.init`] = plugin.init;
-          this.hooks[`task.${plugin.type}.execute`] = plugin.execute;
+          this.hooks[`platform.${plugin.type}.execute`] = plugin.execute;
       } else {
         throw new Error(`Module ${moduleSpec} does not define a valid plug-in.`);
       }
@@ -73,9 +62,6 @@ export class PluginHost {
       return x != null && x.version === '1';
     }
     function isPlatformPlugin(x: any): x is PlatformPlugin {
-      return x != null && x.version === '1';
-    }
-    function isTaskPlugin(x: any): x is TaskPlugin {
       return x != null && x.version === '1';
     }
   }

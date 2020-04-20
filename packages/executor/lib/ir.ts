@@ -80,29 +80,22 @@ function getType(dataset: any): string {
 
 export class RunVisitor extends vi.SimpleVisitor<IR2[]> {
 
-    readonly platform : 'emr';
+  readonly platform = 'emr';
 
   visitJob(node: vi.JobNode, context: IR2[]) {
     context.push({op: `platform.${this.platform}.init`, args: []});
 
     const dataTypes = new Set();
-    const taskTypes = new Set();
 
     node.inputs.forEach((x) => {
-        dataTypes.add(getType(x));
+        dataTypes.add(getType((<vi.InputNode>x).dataset));
     });
     node.outputs.forEach((x) => {
-        dataTypes.add(getType(x));
-    });
-    node.tasks.forEach((x) => {
-        taskTypes.add(getType(x));
+        dataTypes.add(getType((<vi.OutputNode>x).dataset));
     });
 
     dataTypes.forEach((type) => {
         context.push({op: `data.${type}.init`, args: []});
-    });
-    taskTypes.forEach((type) => {
-        context.push({op: `task.${type}.init`, args: []});
     });
 
     node.outputs.map((x) => this.prepareOutput(<vi.OutputNode>x, context));
@@ -127,6 +120,6 @@ export class RunVisitor extends vi.SimpleVisitor<IR2[]> {
 
   visitTask(node: vi.TaskNode, context: IR2[]) {
     const type = getType(node.task);
-    context.push({op: `task.${type}.execute`, args: [node, this.platform]});
+    context.push({op: `platform.${this.platform}.execute`, args: [node, type]});
   }
 }
