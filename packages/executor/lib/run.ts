@@ -89,7 +89,10 @@ export class Run{
 
     const id = uuid();
 
-    Serde.toFile(commands, path.join(MC.BUILD_TMP_DIR, MC.MOONSET_PROPS));
+    Serde.toFile({
+        id,
+        commands,
+    }, path.join(MC.BUILD_TMP_DIR, MC.MOONSET_PROPS));
 
     await this.synth();
 

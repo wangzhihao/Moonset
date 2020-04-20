@@ -1,4 +1,5 @@
 import * as cdk from '@aws-cdk/core';
+import * as sfn from '@aws-cdk/aws-stepfunctions';
 
 export interface DataPlugin {
 
@@ -21,7 +22,7 @@ export interface PlatformPlugin {
 
   init: (host: PluginHost) => void;
 
-  execute: (host: PluginHost, taskType: string, data: any) => void;
+  task: (host: PluginHost, taskType: string, data: any) => void;
 }
 
 export class PluginHost {
@@ -29,7 +30,9 @@ export class PluginHost {
 
   readonly hooks: { [key: string]: Function; } = {};
 
-  constructs: { [key: string]: cdk.Construct; } = {};
+  constructs: { [key: string]: any; } = {}; //TODO: too open
+
+  commands: sfn.IChainable[] = [];
     
   constructor() {
     if (PluginHost.instance && PluginHost.instance !== this) {
@@ -52,7 +55,7 @@ export class PluginHost {
           this.hooks[`data.${plugin.type}.export`] = plugin.export;
       } else if (isPlatformPlugin(plugin)) {
           this.hooks[`platform.${plugin.type}.init`] = plugin.init;
-          this.hooks[`platform.${plugin.type}.execute`] = plugin.execute;
+          this.hooks[`platform.${plugin.type}.task`] = plugin.task;
       } else {
         throw new Error(`Module ${moduleSpec} does not define a valid plug-in.`);
       }

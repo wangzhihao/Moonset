@@ -34,3 +34,6 @@ export class Executor {
     return new vi.RootNode(jobs);
   }
 }
+
+export * from './plugin';
+export * from './constants';

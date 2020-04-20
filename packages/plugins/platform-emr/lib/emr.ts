@@ -1,23 +1,42 @@
 import * as cdk from '@aws-cdk/core';
 import * as sfn from '@aws-cdk/aws-stepfunctions';
+import * as sfnTasks from '@aws-cdk/aws-stepfunctions-tasks';
+import * as iam from '@aws-cdk/aws-iam';
+// eslint-disable-next-line
+import * as ec2 from '@aws-cdk/aws-ec2';
+import {Config, ConfigConstant as CC} from '@moonset/util';
+// eslint-disable-next-line
+import {PluginHost, MoonsetConstants as MC} from '@moonset/executor';
+
 
 export class EmrPlatformPlugin {
-
   version: '1';
 
   type: string = 'EMR';
 
-  init(host: PluginHost): sfn.IChainable {
+  EMR_STACK = 'MoonsetEmrStack';
+  EMR_EC2_ROLE = 'MoonsetEmrEc2Role';
+  EMR_EC2_PROFILE = 'MoonsetEmrEc2Profile';
+  EMR_ROLE = 'MoonsetEmrRole';
+  SCRIPT_RUNNER = 's3://elasticmapreduce/libs/script-runner/script-runner.jar';
 
-    // https://github.com/aws/aws-cdk/issues/3704
-    const vpc = new ec2.Vpc(this.getEmrStack(), 'MoonsetVPC', {
-      maxAzs: 1,
+  init(host: PluginHost) {
+    const c = host.constructs;
+
+    const props = {
+      id: 'foo', // TODO should be passed from outside and consistent.
+      emrApplications: ['Hive', 'Spark'],
+    };
+
+    c[this.EMR_STACK] = new cdk.Stack(<cdk.App>c[MC.CDK_APP], this.EMR_STACK, {
+      env: {
+        account: Config.get(CC.WORKING_ACCOUNT),
+        region: Config.get(CC.WORKING_REGION),
+      },
     });
 
-    const sg = new ec2.SecurityGroup(this.getEmrStack(), 'MoonsetSG', {vpc});
-    sg.addIngressRule(sg, ec2.Port.allTraffic());
-
-    const ec2Role = new iam.Role(this.getEmrStack(), MC.EMR_EC2_ROLE, {
+    // eslint-disable-next-line
+    const ec2Role = new iam.Role(<cdk.Stack>c[this.EMR_STACK], this.EMR_EC2_ROLE, {
       assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
     });
 
@@ -33,12 +52,13 @@ export class EmrPlatformPlugin {
           resources: ['*'],
         }));
 
-    new iam.CfnInstanceProfile(this.getEmrStack(), MC.EMR_EC2_PROFILE, {
+    // eslint-disable-next-line
+    new iam.CfnInstanceProfile(<cdk.Stack>c[this.EMR_STACK], this.EMR_EC2_PROFILE, {
       roles: [ec2Role.roleName],
       instanceProfileName: ec2Role.roleName,
     });
 
-    const emrRole = new iam.Role(this.getEmrStack(), MC.EMR_ROLE, {
+    const emrRole = new iam.Role(<cdk.Stack>c[this.EMR_STACK], this.EMR_ROLE, {
       assumedBy: new iam.ServicePrincipal('elasticmapreduce.amazonaws.com'),
     });
 
@@ -46,22 +66,24 @@ export class EmrPlatformPlugin {
         iam.ManagedPolicy.fromAwsManagedPolicyName(
             'service-role/AmazonElasticMapReduceRole'));
 
-    new iam.CfnServiceLinkedRole(this.getEmrStack(), 'AWSServiceRoleForEMRCleanup', {
+    // eslint-disable-next-line
+    new iam.CfnServiceLinkedRole(<cdk.Stack>c[this.EMR_STACK], 'AWSServiceRoleForEMRCleanup', {
       awsServiceName: 'elasticmapreduce.amazonaws.com',
       // eslint-disable-next-line
       description: 'Allows EMR to terminate instances and delete resources from EC2 on your behalf.',
     });
 
-    const emrSettings = new sfn.Pass(this.getStepFunctionStack(), 'emrSettings', {
+    const emrSettings = new sfn.Pass(<cdk.Stack>c[MC.SF_STACK], 'emrSettings', {
       result: sfn.Result.fromObject({
         ClusterName: `MoonsetEMR-${props.id}`,
       }),
       resultPath: '$.EmrSettings',
     });
 
-    let chain = sfn.Chain.start(emrSettings);
+    host.commands.push(emrSettings);
 
-    const emrCreateTask = new sfn.Task(this.getStepFunctionStack(), 'emrCluster', {
+    // eslint-disable-next-line
+    const emrCreateTask = new sfn.Task(<cdk.Stack>c[MC.SF_STACK], 'emrCluster', {
       task: new sfnTasks.EmrCreateCluster({
         visibleToAllUsers: true,
         logUri: Config.get(CC.EMR_LOG),
@@ -80,20 +102,18 @@ export class EmrPlatformPlugin {
           instanceCount: 3,
           masterInstanceType: 'm5.xlarge',
           slaveInstanceType: 'm5.xlarge',
-          ec2SubnetId: vpc.privateSubnets[0].subnetId,
-          additionalMasterSecurityGroups: [sg.securityGroupId],
+          ec2SubnetId: (<ec2.Vpc>c[MC.VPC]).privateSubnets[0].subnetId,
+          // additionalMasterSecurityGroups: [sg.securityGroupId], // TODO
         },
         integrationPattern: sfn.ServiceIntegrationPattern.SYNC,
       }),
       resultPath: '$.EmrSettings',
     });
 
-    chain = chain.next(emrCreateTask);
-
-    return chain;
+    host.commands.push(emrCreateTask);
   }
 
-  execute(host: PluginHost, taskType: string, data: any): sfn.IChainable {
+  // task(host: PluginHost, taskType: string, data: any) {
 
-  }
+  // }
 }
