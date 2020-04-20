@@ -53,14 +53,14 @@ export class Run{
     await command;
   }
 
-  private async invoke(context: cdk.MoonsetProps2) {
+  private async invoke(id: string) {
     await this.initSDK();
 
     const tagsClient = new TagAPI();
     const resources = await tagsClient.getResources({
       TagFilters: [
         {Key: MC.TAG_MOONSET_TYPE, Values: [MC.TAG_MOONSET_TYPE_SF]},
-        {Key: MC.TAG_MOONSET_ID, Values: [context.id]},
+        {Key: MC.TAG_MOONSET_ID, Values: [id]},
       ],
       ResourceTypeFilters: [
         'states:stateMachine',
@@ -87,12 +87,9 @@ export class Run{
     const commands: ir.IR2[] = [];
     root.accept(new ir.RunVisitor(), commands);
 
-    const props: cdk.MoonsetProps2 = {
-      id: uuid(),
-      commands,
-    };
+    const id = uuid();
 
-    Serde.toFile(props, path.join(MC.BUILD_TMP_DIR, MC.MOONSET_PROPS));
+    Serde.toFile(commands, path.join(MC.BUILD_TMP_DIR, MC.MOONSET_PROPS));
 
     await this.synth();
 
@@ -109,7 +106,7 @@ export class Run{
 
     const deployTime = Date.now();
 
-    await this.invoke(props);
+    await this.invoke(id);
 
     const invokeTime = Date.now();
 

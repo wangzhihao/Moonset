@@ -1,5 +1,4 @@
 import * as cdk from '@aws-cdk/core';
-import * as sfn from '@aws-cdk/aws-stepfunctions';
 
 export interface DataPlugin {
 
@@ -7,11 +6,11 @@ export interface DataPlugin {
 
   type: string;
 
-    init: (host: PluginHost, platform: string) => void;
+  init: (host: PluginHost, platform: string) => void;
 
-  import: (host: PluginHost, platform: string, data: any) => sfn.IChainable;
+  import: (host: PluginHost, platform: string, data: any) => void;
 
-  export: (host: PluginHost, platform: string, data: any) => sfn.IChainable;
+  export: (host: PluginHost, platform: string, data: any) => void;
 }
 
 export interface PlatformPlugin {
@@ -22,16 +21,16 @@ export interface PlatformPlugin {
 
   init: (host: PluginHost) => void;
 
-  execute: (host: PluginHost, taskType: string, data: any) => sfn.IChainable;
+  execute: (host: PluginHost, taskType: string, data: any) => void;
 }
 
 export class PluginHost {
   static instance = new PluginHost();
 
   readonly hooks: { [key: string]: Function; } = {};
-    
-  app: cdk.App;
 
+  constructs: { [key: string]: cdk.Construct; } = {};
+    
   constructor() {
     if (PluginHost.instance && PluginHost.instance !== this) {
       throw new Error('New instances of PluginHost must not be built. Use PluginHost.instance instead!');
