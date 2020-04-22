@@ -1,5 +1,5 @@
 {
-  "name": "platform-emr",
+  "name": "@moonset/plugin-platform-emr",
   "version": "0.0.12",
   "description": "the emr platform plugin",
   "author": "Zhihao Wang <accept.acm@gmail.com>",

@@ -1,10 +1,12 @@
 import * as yargs from 'yargs';
-import {Executor} from '@moonset/executor';
+import {PluginHost, Executor} from '@moonset/executor';
 import {Config, ConfigConstant as CC, logger} from '@moonset/util';
 
 export class Moonset {
   async run() {
     const argv = yargs
+        .option('plugin', {type: 'string', desc: 'load plugin',
+          requiresArg: true})
         .command(['config'], 'Configure the crendentials.')
         .command(['deploy'], 'Deploy the job.',
             (yargs) => yargs
@@ -23,6 +25,12 @@ export class Moonset {
     logger.debug('Command line arguments:', argv);
 
     this.initEnvs();
+    if (argv.plugin) {
+      const plugins = Array.isArray(argv.plugin) ? argv.plugin : [argv.plugin];
+      plugins.forEach((plugin) => {
+        PluginHost.instance.load(plugin);
+      });
+    }
 
     const cmd = argv._[0];
     switch (cmd) {

@@ -22,7 +22,7 @@ export class Executor {
     return states;
   }
   private getRootNode(job: any): vi.RootNode {
-    const jobInput = job instanceof Array ? job : [job];
+    const jobInput = Array.isArray(job) ? job : [job];
     const jobs = jobInput.map((x) => {
       const obj = JSON.parse(x);
       const err = Job.verify(obj);
