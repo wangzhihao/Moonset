@@ -6,11 +6,11 @@ import {MoonsetConstants as MC} from '../constants';
 import * as ir from '../ir';
 // eslint-disable-next-line
 import * as vi from '../visitor';
-import * as plugin from '../plugin';
+import {PluginHost} from '../plugin';
 import * as path from 'path';
 import {Config, ConfigConstant as CC, Serde} from '@moonset/util';
 
-const c = plugin.PluginHost.instance.constructs;
+const c = PluginHost.instance.constructs;
 
 export interface MoonsetProps2 {
 
@@ -33,7 +33,7 @@ function network() {
 }
 
 function stepfunction(props: MoonsetProps2) {
-  const commands = plugin.PluginHost.instance.commands;
+  const commands = PluginHost.instance.commands;
   let chain = sfn.Chain.start(commands[0]);
   for (let i = 1; i < commands.length; i++) {
     chain = chain.next(commands[i]);
@@ -48,6 +48,8 @@ function stepfunction(props: MoonsetProps2) {
 function main() {
   const props = Serde.fromFile<MoonsetProps2>(
       path.join(MC.BUILD_TMP_DIR, MC.MOONSET_PROPS));
+
+  PluginHost.instance.id = props.id;
 
   c[MC.CDK_APP] = new cdk.App();
 
@@ -68,8 +70,8 @@ function main() {
   network();
 
   props.commands.forEach((command) => {
-    const fn = plugin.PluginHost.instance.hooks[command.op];
-    fn(...command.args);
+    const fn = PluginHost.instance.hooks[command.op];
+    fn(PluginHost.instance, ...command.args);
   });
 
   stepfunction(props);

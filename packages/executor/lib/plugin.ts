@@ -32,6 +32,8 @@ export class PluginHost {
 
   constructs: { [key: string]: any; } = {}; //TODO: too open
 
+  id: string;
+
   commands: sfn.IChainable[] = [];
     
   constructor() {

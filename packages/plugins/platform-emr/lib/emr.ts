@@ -24,7 +24,7 @@ export class EmrPlatformPlugin {
     const c = host.constructs;
 
     const props = {
-      id: 'foo', // TODO should be passed from outside and consistent.
+      id: host.id, 
       emrApplications: ['Hive', 'Spark'],
     };
 
@@ -103,7 +103,7 @@ export class EmrPlatformPlugin {
           masterInstanceType: 'm5.xlarge',
           slaveInstanceType: 'm5.xlarge',
           ec2SubnetId: (<ec2.Vpc>c[MC.VPC]).privateSubnets[0].subnetId,
-          // additionalMasterSecurityGroups: [sg.securityGroupId], // TODO
+          additionalMasterSecurityGroups: [(<ec2.SecurityGroup>c[MC.VPC_SG]).securityGroupId],
         },
         integrationPattern: sfn.ServiceIntegrationPattern.SYNC,
       }),

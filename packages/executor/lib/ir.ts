@@ -95,7 +95,7 @@ export class RunVisitor extends vi.SimpleVisitor<IR2[]> {
     });
 
     dataTypes.forEach((type) => {
-        context.push({op: `data.${type}.init`, args: []});
+        context.push({op: `data.${type}.init`, args: [this.platform]});
     });
 
     node.outputs.map((x) => this.prepareOutput(<vi.OutputNode>x, context));
@@ -105,21 +105,21 @@ export class RunVisitor extends vi.SimpleVisitor<IR2[]> {
 
   private prepareOutput(node: vi.OutputNode, context: IR2[]) {
     const type = getType(node.dataset);
-    context.push({op: `data.${type}.import`, args: [node, this.platform]});
+    context.push({op: `data.${type}.import`, args: [this.platform, node]});
   }
 
   visitInput(node: vi.InputNode, context: IR2[]) {
     const type = getType(node.dataset);
-    context.push({op: `data.${type}.import`, args: [node, this.platform]});
+    context.push({op: `data.${type}.import`, args: [this.platform, node]});
   }
 
   visitOutput(node: vi.OutputNode, context: IR2[]) {
     const type = getType(node.dataset);
-    context.push({op: `data.${type}.export`, args: [node, this.platform]});
+    context.push({op: `data.${type}.export`, args: [this.platform, node]});
   }
 
   visitTask(node: vi.TaskNode, context: IR2[]) {
     const type = getType(node.task);
-    context.push({op: `platform.${this.platform}.execute`, args: [node, type]});
+    context.push({op: `platform.${this.platform}.task`, args: [type, node]});
   }
 }
