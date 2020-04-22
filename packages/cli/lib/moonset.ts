@@ -27,10 +27,12 @@ export class Moonset {
     this.initEnvs();
     if (argv.plugin) {
       const plugins = Array.isArray(argv.plugin) ? argv.plugin : [argv.plugin];
-      plugins.forEach(plugin => {
+      plugins.forEach((plugin) => {
         PluginHost.instance.load(plugin);
       });
     }
+    logger.info(`The plugins: ${argv.plugin}. ` +
+          `The hooks: ${Object.keys(PluginHost.instance.hooks)}`);
 
     const cmd = argv._[0];
     switch (cmd) {

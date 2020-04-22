@@ -7,24 +7,24 @@ import * as ec2 from '@aws-cdk/aws-ec2';
 import {Config, ConfigConstant as CC} from '@moonset/util';
 // eslint-disable-next-line
 import {PluginHost, MoonsetConstants as MC} from '@moonset/executor';
+import {StringAsset, FileAsset} from './asset';
 
 
-export class EmrPlatformPlugin {
-  version: '1';
-
-  type: string = 'EMR';
-
-  EMR_STACK = 'MoonsetEmrStack';
-  EMR_EC2_ROLE = 'MoonsetEmrEc2Role';
-  EMR_EC2_PROFILE = 'MoonsetEmrEc2Profile';
-  EMR_ROLE = 'MoonsetEmrRole';
-  SCRIPT_RUNNER = 's3://elasticmapreduce/libs/script-runner/script-runner.jar';
+export  = {
+  version: '1',
+  plugin: 'platform',
+  type: 'emr',
+  EMR_STACK : 'MoonsetEmrStack',
+  EMR_EC2_ROLE : 'MoonsetEmrEc2Role',
+  EMR_EC2_PROFILE : 'MoonsetEmrEc2Profile',
+  EMR_ROLE : 'MoonsetEmrRole',
+  SCRIPT_RUNNER :'s3://elasticmapreduce/libs/script-runner/script-runner.jar',
 
   init(host: PluginHost) {
     const c = host.constructs;
 
     const props = {
-      id: host.id, 
+      id: host.id,
       emrApplications: ['Hive', 'Spark'],
     };
 
@@ -103,7 +103,8 @@ export class EmrPlatformPlugin {
           masterInstanceType: 'm5.xlarge',
           slaveInstanceType: 'm5.xlarge',
           ec2SubnetId: (<ec2.Vpc>c[MC.VPC]).privateSubnets[0].subnetId,
-          additionalMasterSecurityGroups: [(<ec2.SecurityGroup>c[MC.VPC_SG]).securityGroupId],
+          additionalMasterSecurityGroups: [
+            (<ec2.SecurityGroup>c[MC.VPC_SG]).securityGroupId],
         },
         integrationPattern: sfn.ServiceIntegrationPattern.SYNC,
       }),
@@ -111,9 +112,46 @@ export class EmrPlatformPlugin {
     });
 
     host.commands.push(emrCreateTask);
+  },
+
+  task(host: PluginHost, type: string, task: any) {
+    const c = host.constructs;
+    if (type === 'hive') {
+      let s3File;
+      if (task.hive.sqlFile) {
+        s3File = task.hive.sqlFile;
+        if (!task.hive.sqlFile.startsWith('s3://')) {
+          s3File = new FileAsset(<cdk.Stack>c[MC.SF_STACK], `HiveSQL`, {
+            path: task.hive.sqlFile,
+          }).getS3Path();
+        }
+      } else if (task.hive.sql) {
+        s3File = new StringAsset(<cdk.Stack>c[MC.SF_STACK], `HiveSQL`, {
+          content: task.hive.sql,
+        }).getS3Path();
+      } else {
+        throw Error('Either sqlFile or sql must exist for hive.');
+      }
+
+      const emrTask = new sfn.Task(<cdk.Stack>c[MC.SF_STACK], `HiveTask`, {
+        task: new sfnTasks.EmrAddStep({
+          clusterId: sfn.Data.stringAt('$.EmrSettings.ClusterId'),
+          name: 'HiveTask',
+          jar: MC.SCRIPT_RUNNER,
+          args: [
+            's3://elasticmapreduce/libs/hive/hive-script',
+            '--run-hive-script',
+            '--args',
+            '-f',
+            s3File,
+          ],
+          actionOnFailure: sfnTasks.ActionOnFailure.TERMINATE_CLUSTER,
+          integrationPattern: sfn.ServiceIntegrationPattern.SYNC,
+        }),
+        resultPath: sfn.DISCARD,
+      });
+      host.commands.push(emrTask);
+    }
   }
-
-  // task(host: PluginHost, taskType: string, data: any) {
-
-  // }
 }
+

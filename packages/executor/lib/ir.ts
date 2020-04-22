@@ -105,21 +105,21 @@ export class RunVisitor extends vi.SimpleVisitor<IR2[]> {
 
   private prepareOutput(node: vi.OutputNode, context: IR2[]) {
     const type = getType(node.dataset);
-    context.push({op: `data.${type}.import`, args: [this.platform, node]});
+    context.push({op: `data.${type}.import`, args: [this.platform, node.dataset]});
   }
 
   visitInput(node: vi.InputNode, context: IR2[]) {
     const type = getType(node.dataset);
-    context.push({op: `data.${type}.import`, args: [this.platform, node]});
+    context.push({op: `data.${type}.import`, args: [this.platform, node.dataset]});
   }
 
   visitOutput(node: vi.OutputNode, context: IR2[]) {
     const type = getType(node.dataset);
-    context.push({op: `data.${type}.export`, args: [this.platform, node]});
+    context.push({op: `data.${type}.export`, args: [this.platform, node.dataset]});
   }
 
   visitTask(node: vi.TaskNode, context: IR2[]) {
     const type = getType(node.task);
-    context.push({op: `platform.${this.platform}.task`, args: [type, node]});
+    context.push({op: `platform.${this.platform}.task`, args: [type, node.task]});
   }
 }

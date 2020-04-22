@@ -35,7 +35,6 @@
   "dependencies": {
     "@moonset/executor": "^0.0.12",
     "@moonset/util": "^0.0.12",
-    "@moonset/plugin-platform-emr": "^0.0.12",
     "@types/yargs": "^15.0.4",
     "typescript": "^3.8.3",
     "yargs": "^15.3.1"

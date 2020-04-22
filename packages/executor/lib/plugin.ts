@@ -5,6 +5,8 @@ export interface DataPlugin {
 
   version: '1';
 
+  plugin: 'data';
+
   type: string;
 
   init: (host: PluginHost, platform: string) => void;
@@ -18,11 +20,13 @@ export interface PlatformPlugin {
 
   version: '1';
 
+  pluginType: 'platform';
+      
   type: string;
 
   init: (host: PluginHost) => void;
 
-  task: (host: PluginHost, taskType: string, data: any) => void;
+  task: (host: PluginHost, type: string, task: any) => void;
 }
 
 export class PluginHost {
@@ -61,12 +65,11 @@ export class PluginHost {
       } else {
         throw new Error(`Module ${moduleSpec} does not define a valid plug-in.`);
       }
-
     function isDataPlugin(x: any): x is DataPlugin {
-      return x != null && x.version === '1';
+      return x != null && x.plugin === 'data' && x.version === '1';
     }
     function isPlatformPlugin(x: any): x is PlatformPlugin {
-      return x != null && x.version === '1';
+      return x != null && x.plugin === 'platform' && x.version === '1';
     }
   }
 }
