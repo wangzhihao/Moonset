@@ -11,9 +11,9 @@ export class Executor {
   async run(job: any) {
     await new Run().start(this.getRootNode(job));
   }
-  ir(job: any): ir.IR2[] {
+  ir(job: any): ir.IR[] {
     const root = this.getRootNode(job);
-    const states: ir.IR2[] = [];
+    const states: ir.IR[] = [];
     root.accept(new ir.RunVisitor(), states);
     return states;
   }

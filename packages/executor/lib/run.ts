@@ -41,7 +41,7 @@ export class Run{
   private async synth() {
     const command = execa(`${require.resolve('aws-cdk/bin/cdk')}`, [
       'synth',
-       `--app="node ${path.resolve(__dirname, 'cdk', 'moonset-app-2.js')}"`,
+       `--app="node ${path.resolve(__dirname, 'cdk', 'moonset-app.js')}"`,
        `--output=${path.join(MC.BUILD_TMP_DIR, MC.CDK_OUT_DIR)}`
     ], {stdio: ['ignore', 'pipe', 'pipe']});
 
@@ -85,7 +85,7 @@ export class Run{
   async start(root: vi.RootNode) {
     const startTime = Date.now();
 
-    const commands: ir.IR2[] = [];
+    const commands: ir.IR[] = [];
     root.accept(new ir.RunVisitor(), commands);
 
     const id = uuid();

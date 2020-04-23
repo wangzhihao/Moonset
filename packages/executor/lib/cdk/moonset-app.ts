@@ -12,13 +12,13 @@ import {Config, ConfigConstant as CC, Serde} from '@moonset/util';
 
 const c = PluginHost.instance.constructs;
 
-export interface MoonsetProps2 {
+export interface MoonsetProps {
 
     id: string;
 
     plugins: string[];
 
-    commands: ir.IR2[];
+    commands: ir.IR[];
 }
 
 function network() {
@@ -34,7 +34,7 @@ function network() {
   (<ec2.SecurityGroup>c[MC.VPC_SG]).addIngressRule(<ec2.SecurityGroup>c[MC.VPC_SG], ec2.Port.allTraffic());
 }
 
-function stepfunction(props: MoonsetProps2) {
+function stepfunction(props: MoonsetProps) {
   const commands = PluginHost.instance.commands;
   let chain = sfn.Chain.start(commands[0]);
   for (let i = 1; i < commands.length; i++) {
@@ -48,7 +48,7 @@ function stepfunction(props: MoonsetProps2) {
 }
 
 function main() {
-  const props = Serde.fromFile<MoonsetProps2>(
+  const props = Serde.fromFile<MoonsetProps>(
       path.join(MC.BUILD_TMP_DIR, MC.MOONSET_PROPS));
 
   PluginHost.instance.id = props.id;

@@ -1,5 +1,5 @@
 import * as vi from './visitor';
-export interface IR2 {
+export interface IR {
     readonly op: string;
     readonly args: any[];
 }
@@ -12,11 +12,11 @@ function getType(dataset: any): string {
     return keys[0];
   }
 
-export class RunVisitor extends vi.SimpleVisitor<IR2[]> {
+export class RunVisitor extends vi.SimpleVisitor<IR[]> {
 
   readonly platform = 'emr';
 
-  visitJob(node: vi.JobNode, context: IR2[]) {
+  visitJob(node: vi.JobNode, context: IR[]) {
     context.push({op: `platform.${this.platform}.init`, args: []});
 
     const dataTypes = new Set();
@@ -37,22 +37,22 @@ export class RunVisitor extends vi.SimpleVisitor<IR2[]> {
     this.visit(node, context);
   }
 
-  private prepareOutput(node: vi.OutputNode, context: IR2[]) {
+  private prepareOutput(node: vi.OutputNode, context: IR[]) {
     const type = getType(node.dataset);
     context.push({op: `data.${type}.import`, args: [this.platform, node.dataset]});
   }
 
-  visitInput(node: vi.InputNode, context: IR2[]) {
+  visitInput(node: vi.InputNode, context: IR[]) {
     const type = getType(node.dataset);
     context.push({op: `data.${type}.import`, args: [this.platform, node.dataset]});
   }
 
-  visitOutput(node: vi.OutputNode, context: IR2[]) {
+  visitOutput(node: vi.OutputNode, context: IR[]) {
     const type = getType(node.dataset);
     context.push({op: `data.${type}.export`, args: [this.platform, node.dataset]});
   }
 
-  visitTask(node: vi.TaskNode, context: IR2[]) {
+  visitTask(node: vi.TaskNode, context: IR[]) {
     const type = getType(node.task);
     context.push({op: `platform.${this.platform}.task`, args: [type, node.task]});
   }
