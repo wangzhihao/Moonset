@@ -14,6 +14,8 @@ function getType(dataset: any): string {
 
 export class RunVisitor extends vi.SimpleVisitor<IR[]> {
 
+  // TODO Currently hardcode the platform type. Need to change when we support
+  // multiple platforms. 
   readonly platform = 'emr';
 
   visitJob(node: vi.JobNode, context: IR[]) {

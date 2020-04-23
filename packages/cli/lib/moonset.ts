@@ -25,14 +25,7 @@ export class Moonset {
     logger.debug('Command line arguments:', argv);
 
     this.initEnvs();
-    if (argv.plugin) {
-      const plugins = Array.isArray(argv.plugin) ? argv.plugin : [argv.plugin];
-      plugins.forEach((plugin) => {
-        PluginHost.instance.load(plugin);
-      });
-    }
-    logger.info(`The plugins: ${argv.plugin}. ` +
-          `The hooks: ${Object.keys(PluginHost.instance.hooks)}`);
+    this.loadPlugins(argv.plugin);
 
     const cmd = argv._[0];
     switch (cmd) {
@@ -52,6 +45,17 @@ export class Moonset {
       default:
         throw new Error('Unknown command: ' + cmd);
     }
+  }
+
+  private loadPlugins(plugin: any) {
+    if (plugin) {
+      const plugins = Array.isArray(plugin) ? plugin : [plugin];
+      plugins.forEach((plugin) => {
+        PluginHost.instance.load(plugin);
+      });
+    }
+    logger.info(`The plugins: ${plugin}. ` +
+          `The hooks: ${Object.keys(PluginHost.instance.hooks)}`);
   }
 
   private initEnvs() {
