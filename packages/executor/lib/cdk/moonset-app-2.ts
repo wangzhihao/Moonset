@@ -8,13 +8,15 @@ import * as ir from '../ir';
 import * as vi from '../visitor';
 import {PluginHost} from '../plugin';
 import * as path from 'path';
-import {Config, ConfigConstant as CC, Serde} from '@moonset/util';
+import {Config, ConfigConstant as CC, logger, Serde} from '@moonset/util';
 
 const c = PluginHost.instance.constructs;
 
 export interface MoonsetProps2 {
 
     id: string;
+
+    plugins: string[];
 
     commands: ir.IR2[];
 }
@@ -50,6 +52,10 @@ function main() {
       path.join(MC.BUILD_TMP_DIR, MC.MOONSET_PROPS));
 
   PluginHost.instance.id = props.id;
+  props.plugins.forEach((plugin) => {
+    PluginHost.instance.load(plugin);
+  });
+
 
   c[MC.CDK_APP] = new cdk.App();
 

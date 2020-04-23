@@ -33,6 +33,7 @@ export class PluginHost {
   static instance = new PluginHost();
 
   readonly hooks: { [key: string]: Function; } = {};
+  readonly plugins: string[] = [];
 
   constructs: { [key: string]: any; } = {}; //TODO: too open
 
@@ -65,6 +66,7 @@ export class PluginHost {
       } else {
         throw new Error(`Module ${moduleSpec} does not define a valid plug-in.`);
       }
+      this.plugins.push(moduleSpec);
     function isDataPlugin(x: any): x is DataPlugin {
       return x != null && x.plugin === 'data' && x.version === '1';
     }

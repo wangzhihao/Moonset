@@ -9,16 +9,17 @@ import {Config, ConfigConstant as CC} from '@moonset/util';
 import {PluginHost, MoonsetConstants as MC} from '@moonset/executor';
 import {StringAsset, FileAsset} from './asset';
 
+const EMR_STACK = 'MoonsetEmrStack';
+const EMR_EC2_ROLE = 'MoonsetEmrEc2Role';
+const EMR_EC2_PROFILE = 'MoonsetEmrEc2Profile';
+const EMR_ROLE = 'MoonsetEmrRole';
+const SCRIPT_RUNNER =
+    's3://elasticmapreduce/libs/script-runner/script-runner.jar';
 
 export  = {
   version: '1',
   plugin: 'platform',
   type: 'emr',
-  EMR_STACK : 'MoonsetEmrStack',
-  EMR_EC2_ROLE : 'MoonsetEmrEc2Role',
-  EMR_EC2_PROFILE : 'MoonsetEmrEc2Profile',
-  EMR_ROLE : 'MoonsetEmrRole',
-  SCRIPT_RUNNER :'s3://elasticmapreduce/libs/script-runner/script-runner.jar',
 
   init(host: PluginHost) {
     const c = host.constructs;
@@ -28,7 +29,7 @@ export  = {
       emrApplications: ['Hive', 'Spark'],
     };
 
-    c[this.EMR_STACK] = new cdk.Stack(<cdk.App>c[MC.CDK_APP], this.EMR_STACK, {
+    c[EMR_STACK] = new cdk.Stack(<cdk.App>c[MC.CDK_APP], EMR_STACK, {
       env: {
         account: Config.get(CC.WORKING_ACCOUNT),
         region: Config.get(CC.WORKING_REGION),
@@ -36,7 +37,7 @@ export  = {
     });
 
     // eslint-disable-next-line
-    const ec2Role = new iam.Role(<cdk.Stack>c[this.EMR_STACK], this.EMR_EC2_ROLE, {
+    const ec2Role = new iam.Role(<cdk.Stack>c[EMR_STACK], EMR_EC2_ROLE, {
       assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
     });
 
@@ -53,12 +54,12 @@ export  = {
         }));
 
     // eslint-disable-next-line
-    new iam.CfnInstanceProfile(<cdk.Stack>c[this.EMR_STACK], this.EMR_EC2_PROFILE, {
+    new iam.CfnInstanceProfile(<cdk.Stack>c[EMR_STACK], EMR_EC2_PROFILE, {
       roles: [ec2Role.roleName],
       instanceProfileName: ec2Role.roleName,
     });
 
-    const emrRole = new iam.Role(<cdk.Stack>c[this.EMR_STACK], this.EMR_ROLE, {
+    const emrRole = new iam.Role(<cdk.Stack>c[EMR_STACK], EMR_ROLE, {
       assumedBy: new iam.ServicePrincipal('elasticmapreduce.amazonaws.com'),
     });
 
@@ -67,7 +68,7 @@ export  = {
             'service-role/AmazonElasticMapReduceRole'));
 
     // eslint-disable-next-line
-    new iam.CfnServiceLinkedRole(<cdk.Stack>c[this.EMR_STACK], 'AWSServiceRoleForEMRCleanup', {
+    new iam.CfnServiceLinkedRole(<cdk.Stack>c[EMR_STACK], 'AWSServiceRoleForEMRCleanup', {
       awsServiceName: 'elasticmapreduce.amazonaws.com',
       // eslint-disable-next-line
       description: 'Allows EMR to terminate instances and delete resources from EC2 on your behalf.',
@@ -137,7 +138,7 @@ export  = {
         task: new sfnTasks.EmrAddStep({
           clusterId: sfn.Data.stringAt('$.EmrSettings.ClusterId'),
           name: 'HiveTask',
-          jar: MC.SCRIPT_RUNNER,
+          jar: SCRIPT_RUNNER,
           args: [
             's3://elasticmapreduce/libs/hive/hive-script',
             '--run-hive-script',

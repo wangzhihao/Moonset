@@ -2,6 +2,7 @@ import {v4 as uuid} from 'uuid';
 // eslint-disable-next-line
 import * as vi from './visitor';
 import * as ir from './ir';
+import {PluginHost} from './plugin';
 import * as cdk from './cdk';
 import * as aws from 'aws-sdk';
 import * as TagAPI from 'aws-sdk/clients/resourcegroupstaggingapi';
@@ -92,6 +93,7 @@ export class Run{
     Serde.toFile({
         id,
         commands,
+        plugins: PluginHost.instance.plugins,
     }, path.join(MC.BUILD_TMP_DIR, MC.MOONSET_PROPS));
 
     await this.synth();
