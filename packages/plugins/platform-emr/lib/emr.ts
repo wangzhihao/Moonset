@@ -16,7 +16,7 @@ const EMR_ROLE = 'MoonsetEmrRole';
 const SCRIPT_RUNNER =
     's3://elasticmapreduce/libs/script-runner/script-runner.jar';
 
-export  = {
+export = {
   version: '1',
   plugin: 'platform',
   type: 'emr',
@@ -153,6 +153,6 @@ export  = {
       });
       host.commands.push(emrTask);
     }
-  }
+  },
 }
 

@@ -8,7 +8,7 @@ import * as ir from '../ir';
 import * as vi from '../visitor';
 import {PluginHost} from '../plugin';
 import * as path from 'path';
-import {Config, ConfigConstant as CC, logger, Serde} from '@moonset/util';
+import {Config, ConfigConstant as CC, Serde} from '@moonset/util';
 
 const c = PluginHost.instance.constructs;
 
