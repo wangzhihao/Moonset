@@ -40,7 +40,7 @@ export class Moonset {
         Config.ask();
         return;
       case 'deploy':
-        await new Executor().deploy(argv.job);
+        logger.info('Not implemented yet.');
         return;
       case 'run':
         await new Executor().run(argv.job);

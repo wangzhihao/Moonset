@@ -1,19 +1,4 @@
 syntax = "proto3";
 
 message Task {
-    oneof type {
-        Hive hive = 2;
-        Spark spark = 3;
-    }
 }
-
-message Hive {
-    string sql_file = 1;
-    string sql = 2;
-}
-
-message Spark {
-    string jar = 1;
-    string main_class = 2;
-}
-

@@ -15,8 +15,7 @@
     "test": "__tests__"
   },
   "files": [
-    "lib",
-    "script"
+    "lib"
   ],
   "repository": {
     "type": "git",

@@ -2,16 +2,12 @@ import {Job} from '@moonset/model';
 import * as vi from './visitor';
 import * as ir from './ir';
 import {logger} from '@moonset/util';
-import {Deployment} from './deploy';
 import {Run} from './run';
 
 
 export class Executor {
   constructor() {}
 
-  async deploy(job: any) {
-    await new Deployment().start(this.getRootNode(job));
-  }
   async run(job: any) {
     await new Run().start(this.getRootNode(job));
   }
