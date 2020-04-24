@@ -1,10 +1,12 @@
 import * as yargs from 'yargs';
-import {Executor} from '@moonset/executor';
+import {PluginHost, Executor} from '@moonset/executor';
 import {Config, ConfigConstant as CC, logger} from '@moonset/util';
 
 export class Moonset {
   async run() {
     const argv = yargs
+        .option('plugin', {type: 'string', desc: 'load plugin',
+          requiresArg: true})
         .command(['config'], 'Configure the crendentials.')
         .command(['deploy'], 'Deploy the job.',
             (yargs) => yargs
@@ -23,6 +25,7 @@ export class Moonset {
     logger.debug('Command line arguments:', argv);
 
     this.initEnvs();
+    this.loadPlugins(argv.plugin);
 
     const cmd = argv._[0];
     switch (cmd) {
@@ -30,10 +33,10 @@ export class Moonset {
         Config.ask();
         return;
       case 'deploy':
-        await new Executor().deploy(argv.job);
+        logger.info('Not implemented yet.');
         return;
       case 'run':
-        logger.info('Not implemented yet.');
+        await new Executor().run(argv.job);
         return;
       case 'ir':
         const states = new Executor().ir(argv.job);
@@ -42,6 +45,18 @@ export class Moonset {
       default:
         throw new Error('Unknown command: ' + cmd);
     }
+  }
+
+  private loadPlugins(plugin: any) {
+    if (plugin) {
+      const plugins = Array.isArray(plugin) ? plugin : [plugin];
+      plugins.forEach((plugin) => {
+        PluginHost.instance.load(plugin);
+      });
+    }
+    logger.info(`The plugins: ${plugin}. ` +
+          `The hooks: ${Object.keys(PluginHost.instance.hooks)}, ` +
+          `The tasks: ${JSON.stringify(PluginHost.instance.task2Platform)}`);
   }
 
   private initEnvs() {

@@ -27,7 +27,7 @@ npx lerna run --parallel watch
 # check the diff of this deployment and online cloudformation
 npx cdk diff --app ./build/cdk.out
 # update the dependencies in package.json
-npx npm-check-updates -u
+npx lerna exec -- npx npm-check-updates -u
 ```
 
 The packages are publish in NPM. Here are some links:
