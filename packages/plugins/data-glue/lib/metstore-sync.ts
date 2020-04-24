@@ -2,7 +2,7 @@ import * as s3Asset from '@aws-cdk/aws-s3-assets';
 import * as sfn from '@aws-cdk/aws-stepfunctions';
 import * as sfnTasks from '@aws-cdk/aws-stepfunctions-tasks';
 import * as cdk from '@aws-cdk/core';
-import {MoonsetConstants as MC} from '../constants';
+import {MoonsetConstants as MC} from '@moonset/executor';
 import * as path from 'path';
 
 export interface MetastoreSyncProps {
@@ -19,8 +19,7 @@ export class MetastoreSyncConstruct extends cdk.Construct {
     constructor(scope: cdk.Construct, id: string, props: MetastoreSyncProps) {
       super(scope, id);
       const asset = new s3Asset.Asset(this, `${id}-metastoreSync-script`, {
-        path: path.resolve(__dirname, '..', '..', 'script',
-            'metastore-sync.sh'),
+        path: path.resolve(__dirname, '..', 'script', 'metastore-sync.sh'),
       });
 
       const args = [];

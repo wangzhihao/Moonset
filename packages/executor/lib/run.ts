@@ -2,6 +2,7 @@ import {v4 as uuid} from 'uuid';
 // eslint-disable-next-line
 import * as vi from './visitor';
 import * as ir from './ir';
+import {PluginHost} from './plugin';
 import * as cdk from './cdk';
 import * as aws from 'aws-sdk';
 import * as TagAPI from 'aws-sdk/clients/resourcegroupstaggingapi';
@@ -10,7 +11,7 @@ import {Config, ConfigConstant as CC, logger, Serde} from '@moonset/util';
 import * as execa from 'execa';
 import * as path from 'path';
 
-export class Deployment {
+export class Run{
   private async initSDK() {
     if (!aws.config.region) {
       aws.config.update({
@@ -53,14 +54,14 @@ export class Deployment {
     await command;
   }
 
-  private async invoke(context: cdk.MoonsetProps) {
+  private async invoke(id: string) {
     await this.initSDK();
 
     const tagsClient = new TagAPI();
     const resources = await tagsClient.getResources({
       TagFilters: [
         {Key: MC.TAG_MOONSET_TYPE, Values: [MC.TAG_MOONSET_TYPE_SF]},
-        {Key: MC.TAG_MOONSET_ID, Values: [context.id]},
+        {Key: MC.TAG_MOONSET_ID, Values: [id]},
       ],
       ResourceTypeFilters: [
         'states:stateMachine',
@@ -85,15 +86,15 @@ export class Deployment {
     const startTime = Date.now();
 
     const commands: ir.IR[] = [];
-    root.accept(new ir.DeployVisitor(), commands);
+    root.accept(new ir.RunVisitor(), commands);
 
-    const props: cdk.MoonsetProps = {
-      id: uuid(),
-      commands,
-      emrApplications: ['Hive', 'Spark'],
-    };
+    const id = uuid();
 
-    Serde.toFile(props, path.join(MC.BUILD_TMP_DIR, MC.MOONSET_PROPS));
+    Serde.toFile({
+        id,
+        commands,
+        plugins: PluginHost.instance.plugins,
+    }, path.join(MC.BUILD_TMP_DIR, MC.MOONSET_PROPS));
 
     await this.synth();
 
@@ -110,7 +111,7 @@ export class Deployment {
 
     const deployTime = Date.now();
 
-    await this.invoke(props);
+    await this.invoke(id);
 
     const invokeTime = Date.now();
 

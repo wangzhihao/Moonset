@@ -1,14 +1,4 @@
 syntax = "proto3";
 
 message DataSet {
-    oneof type {
-        Glue glue = 1;
-    }
 }
-
-message Glue {
-    string db = 1;
-    string table = 2;
-    map<string, string> partition = 3;
-}
-

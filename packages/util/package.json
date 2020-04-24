@@ -31,13 +31,13 @@
   },
   "dependencies": {
     "@types/inquirer": "^6.5.0",
-    "inquirer": "^7.0.6",
+    "inquirer": "^7.1.0",
     "typescript": "^3.8.3",
     "winston": "^3.2.1"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^2.22.0",
-    "@typescript-eslint/parser": "^2.22.0",
+    "@typescript-eslint/eslint-plugin": "^2.29.0",
+    "@typescript-eslint/parser": "^2.29.0",
     "eslint": "^6.8.0",
     "eslint-config-google": "^0.14.0"
   }
