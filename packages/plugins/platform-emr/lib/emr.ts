@@ -20,6 +20,7 @@ export = {
   version: '1',
   plugin: 'platform',
   type: 'emr',
+  taskType: ['hive', 'spark'],
 
   init(host: PluginHost) {
     const c = host.constructs;

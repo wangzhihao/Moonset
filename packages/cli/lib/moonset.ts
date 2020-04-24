@@ -55,7 +55,8 @@ export class Moonset {
       });
     }
     logger.info(`The plugins: ${plugin}. ` +
-          `The hooks: ${Object.keys(PluginHost.instance.hooks)}`);
+          `The hooks: ${Object.keys(PluginHost.instance.hooks)}, ` +
+          `The tasks: ${JSON.stringify(PluginHost.instance.task2Platform)}`);
   }
 
   private initEnvs() {

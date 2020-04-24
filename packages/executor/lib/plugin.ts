@@ -24,6 +24,8 @@ export interface PlatformPlugin {
       
   type: string;
 
+  taskType: string[];
+
   init: (host: PluginHost) => void;
 
   task: (host: PluginHost, type: string, task: any) => void;
@@ -34,7 +36,7 @@ export class PluginHost {
 
   readonly hooks: { [key: string]: Function; } = {};
   readonly plugins: string[] = [];
-
+  readonly task2Platform: {[key: string]: string}  = {};
   constructs: { [key: string]: any; } = {}; //TODO: too open
 
   id: string;
@@ -61,6 +63,9 @@ export class PluginHost {
           this.hooks[`data.${plugin.type}.import`] = plugin.import;
           this.hooks[`data.${plugin.type}.export`] = plugin.export;
       } else if (isPlatformPlugin(plugin)) {
+          for(let i = 0; i < plugin.taskType.length; i++) {
+            this.addTaskPlatformMapping(plugin.taskType[i], plugin.type);
+          }
           this.hooks[`platform.${plugin.type}.init`] = plugin.init;
           this.hooks[`platform.${plugin.type}.task`] = plugin.task;
       } else {
@@ -73,5 +78,13 @@ export class PluginHost {
     function isPlatformPlugin(x: any): x is PlatformPlugin {
       return x != null && x.plugin === 'platform' && x.version === '1';
     }
+  }
+
+  private addTaskPlatformMapping(task: string, platform: string) {
+    if(this.task2Platform[task]) {
+        throw new Error(`Duplicate Task registered for ${task}`+
+            ` between platforms ${this.task2Platform[task]} and ${platform}`);
+    }
+    this.task2Platform[task] = platform;
   }
 }

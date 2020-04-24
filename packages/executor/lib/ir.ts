@@ -1,4 +1,6 @@
 import * as vi from './visitor';
+import {PluginHost} from './plugin';
+
 export interface IR {
     readonly op: string;
     readonly args: any[];
@@ -14,11 +16,19 @@ function getType(dataset: any): string {
 
 export class RunVisitor extends vi.SimpleVisitor<IR[]> {
 
-  // TODO Currently hardcode the platform type. Need to change when we support
-  // multiple platforms. 
-  readonly platform = 'emr';
+  platform: string;
 
   visitJob(node: vi.JobNode, context: IR[]) {
+    const platforms = new Set();
+    node.tasks.forEach((x) => {
+        const type: string = getType((<vi.TaskNode>x).task);
+        platforms.add(PluginHost.instance.task2Platform[type]);
+    });
+    if(platforms.size !== 1) {
+        throw new Error("We support only one platform in a single job for now");
+    }
+    this.platform = platforms.values().next().value;
+    
     context.push({op: `platform.${this.platform}.init`, args: []});
 
     const dataTypes = new Set();
