@@ -24,7 +24,6 @@ export class Moonset {
 
     logger.debug('Command line arguments:', argv);
 
-    this.initEnvs();
     this.loadPlugins(argv.plugin);
 
     const cmd = argv._[0];
@@ -33,9 +32,11 @@ export class Moonset {
         Config.ask();
         return;
       case 'deploy':
+        this.initEnvs();
         logger.info('Not implemented yet.');
         return;
       case 'run':
+        this.initEnvs();
         await new Executor().run(argv.job);
         return;
       case 'ir':
