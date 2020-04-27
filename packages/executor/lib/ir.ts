@@ -24,8 +24,11 @@ export class RunVisitor extends vi.SimpleVisitor<IR[]> {
         const type: string = getType((<vi.TaskNode>x).task);
         platforms.add(PluginHost.instance.task2Platform[type]);
     });
-    if(platforms.size !== 1) {
+    if(platforms.size > 1) {
         throw new Error("We support only one platform in a single job for now");
+    }
+    if(platforms.size === 0) {
+        throw new Error("There should be at least one task.");
     }
     this.platform = platforms.values().next().value;
     
