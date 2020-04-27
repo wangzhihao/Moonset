@@ -18,7 +18,10 @@ For example, to run some hive tasks on AWS EMR. Try to following command.
 npx moonset config
 
 # run a job
-npx moonset run --job '{
+npx moonset run \
+    --plugin '@moonset/plugin-platform-emr'  \
+    --plugin '@moonset/plugin-data-glue' \
+    --job '{
     "input": [{
         "glue": { "db": "foo", "table": "apple", "partition": {"region_id": "1", "snapshot_date": "2020-01-01"}}
     }],
