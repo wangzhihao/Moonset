@@ -8,7 +8,10 @@ cd Moonset/
 npm install
 npx lerna bootstrap
 ./packages/cli/cli.js --help
-./packages/cli/cli.js deploy --job '{}'
+./packages/cli/cli.js run \
+    --plugin '@moonset/plugin-platform-emr'  \
+    --plugin '@moonset/plugin-data-glue' \
+    --job '{}'
 ```
 
 All packages should maintain the same version by lerna. The following are some
