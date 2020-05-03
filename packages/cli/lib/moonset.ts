@@ -1,3 +1,4 @@
+import 'source-map-support/register';
 import * as yargs from 'yargs';
 import {PluginHost, Executor} from '@moonset/executor';
 import {Config, ConfigConstant as CC, logger} from '@moonset/util';
