@@ -84,6 +84,14 @@ export = {
 
     host.commands.push(emrSettings);
 
+    const emrSg = <ec2.SecurityGroup>c[MC.VPC_SG];
+    const serviceSg = new ec2.SecurityGroup(c[MC.INFRA_STACK], 'serviceSg', {
+      vpc: <ec2.Vpc>c[MC.VPC],
+    });
+    // To prevent AWS EMR auto create ingress/egress rule.
+    serviceSg.addEgressRule(emrSg, ec2.Port.tcp(8443));
+    emrSg.addIngressRule(serviceSg, ec2.Port.tcp(8443));
+
     // eslint-disable-next-line
     const emrCreateTask = new sfn.Task(<cdk.Stack>c[MC.SF_STACK], 'emrCluster', {
       task: new sfnTasks.EmrCreateCluster({
@@ -105,8 +113,9 @@ export = {
           masterInstanceType: 'm5.xlarge',
           slaveInstanceType: 'm5.xlarge',
           ec2SubnetId: (<ec2.Vpc>c[MC.VPC]).privateSubnets[0].subnetId,
-          additionalMasterSecurityGroups: [
-            (<ec2.SecurityGroup>c[MC.VPC_SG]).securityGroupId],
+          emrManagedMasterSecurityGroup: emrSg.securityGroupId,
+          emrManagedSlaveSecurityGroup: emrSg.securityGroupId,
+          serviceAccessSecurityGroup: serviceSg.securityGroupId,
         },
         integrationPattern: sfn.ServiceIntegrationPattern.SYNC,
       }),
