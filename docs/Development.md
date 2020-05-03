@@ -7,10 +7,11 @@ to prepare the develop environment and invoke the CLI for development.
 cd Moonset/
 npm install
 npx lerna bootstrap
-./packages/cli/cli.js --help
-./packages/cli/cli.js run \
-    --plugin '@moonset/plugin-platform-emr'  \
-    --plugin '@moonset/plugin-data-glue' \
+cd ./package/cli/
+npm run cli -- --help
+npm run cli -- run  \
+    --plugin $(readlink -f ../plugins/platform-emr/)  \
+    --plugin $(readlink -f ../plugins/data-glue/)  \
     --job '{}'
 ```
 
