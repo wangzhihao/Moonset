@@ -7,12 +7,14 @@ to prepare the develop environment and invoke the CLI for development.
 cd Moonset/
 npm install
 npx lerna bootstrap
-cd ./package/cli/
+cd ./packages/cli/
 npm run cli -- --help
 npm run cli -- run  \
     --plugin $(readlink -f ../plugins/platform-emr/)  \
     --plugin $(readlink -f ../plugins/data-glue/)  \
-    --job '{}'
+    --job  '{"task": [
+        {"hive": {"sql": "show tables;"}}
+    ]}'
 ```
 
 All packages should maintain the same version by lerna. The following are some
