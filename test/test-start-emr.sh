@@ -25,4 +25,7 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
+id=$(aws emr list-clusters --region us-east-1 --active |  jq '.Clusters[].Id' | tr -d '"')
+aws emr terminate-clusters --region us-east-1 --cluster-ids $id
+
 echo "Pass!"
