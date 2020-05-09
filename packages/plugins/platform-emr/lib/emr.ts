@@ -53,6 +53,11 @@ export = {
           actions: ['kms:*'],
           resources: ['*'],
         }));
+    ec2Role.addToPolicy(
+        new iam.PolicyStatement({
+          actions: ['sts:AssumeRole'],
+          resources: ['*'],
+        }));
 
     // eslint-disable-next-line
     new iam.CfnInstanceProfile(<cdk.Stack>c[EMR_STACK], EMR_EC2_PROFILE, {

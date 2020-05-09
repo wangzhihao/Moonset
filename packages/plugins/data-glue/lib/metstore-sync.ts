@@ -8,6 +8,8 @@ import * as path from 'path';
 export interface MetastoreSyncProps {
     db: string,
     table: string,
+    assumeRole?: string,
+    region?: string,
     source: string,
     partition?: {[k: string]: string}
 }
@@ -22,6 +24,8 @@ export class MetastoreSyncConstruct extends cdk.Construct {
         path: path.resolve(__dirname, '..', 'script', 'metastore-sync.sh'),
       });
 
+      const region = props.region ? props.region : "us-east-1";
+
       const args = [];
       args.push(
           `s3://${asset.s3BucketName}/${asset.s3ObjectKey}`,
@@ -31,7 +35,13 @@ export class MetastoreSyncConstruct extends cdk.Construct {
           props.table,
           '--source',
           props.source,
+          '--region',
+          region,
       );
+
+      if(props.assumeRole) {
+         args.push('--assume_role', props.assumeRole);      
+      }
 
       if (props.partition) {
         const partition = props.partition;
