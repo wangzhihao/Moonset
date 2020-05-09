@@ -25,6 +25,8 @@ export = {
               <cdk.Stack>c[MC.SF_STACK], `MetastoreSync-${index++}`, {
                 db: data.glue.db!,
                 table: data.glue.table!,
+                assumeRole: data.glue.assumeRole,
+                region: data.glue.region,
                 source: 'datacatalog',
                 partition: data.glue.partition!,
               }).task;
@@ -40,6 +42,8 @@ export = {
               <cdk.Stack>c[MC.SF_STACK], `MetastoreSync-${index++}`, {
                 db: data.glue.db!,
                 table: data.glue.table!,
+                assumeRole: data.glue.assumeRole,
+                region: data.glue.region,
                 source: 'hive',
                 partition: data.glue.partition!,
               }).task;
