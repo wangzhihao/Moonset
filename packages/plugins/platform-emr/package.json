@@ -1,6 +1,6 @@
 {
   "name": "@moonset/plugin-platform-emr",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "description": "the emr platform plugin",
   "author": "Zhihao Wang <accept.acm@gmail.com>",
   "homepage": "https://github.com/wangzhihao/Moonset#readme",
@@ -36,8 +36,8 @@
     "@aws-cdk/aws-stepfunctions": "^1.34.0",
     "@aws-cdk/aws-stepfunctions-tasks": "^1.34.0",
     "@aws-cdk/core": "^1.34.0",
-    "@moonset/executor": "^0.0.15",
-    "@moonset/util": "^0.0.15",
+    "@moonset/executor": "^0.0.16",
+    "@moonset/util": "^0.0.16",
     "@types/node": "^13.13.1",
     "@types/uuid": "^7.0.2",
     "aws-cdk": "^1.34.0",

@@ -24,7 +24,7 @@ export class MetastoreSyncConstruct extends cdk.Construct {
         path: path.resolve(__dirname, '..', 'script', 'metastore-sync.sh'),
       });
 
-      const region = props.region ? props.region : "us-east-1";
+      const region = props.region ? props.region : 'us-east-1';
 
       const args = [];
       args.push(
@@ -39,8 +39,8 @@ export class MetastoreSyncConstruct extends cdk.Construct {
           region,
       );
 
-      if(props.assumeRole) {
-         args.push('--assume_role', props.assumeRole);      
+      if (props.assumeRole) {
+        args.push('--assume_role', props.assumeRole);
       }
 
       if (props.partition) {
