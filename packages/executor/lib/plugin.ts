@@ -26,7 +26,7 @@ export interface PlatformPlugin {
 
   taskType: string[];
 
-  init: (host: PluginHost) => void;
+  init: (host: PluginHost, settings: any) => void;
 
   task: (host: PluginHost, type: string, task: any) => void;
 }

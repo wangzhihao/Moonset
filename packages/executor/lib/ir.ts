@@ -19,20 +19,11 @@ export class RunVisitor extends vi.SimpleVisitor<IR[]> {
   platform: string;
 
   visitJob(node: vi.JobNode, context: IR[]) {
-    const platforms = new Set();
-    node.tasks.forEach((x) => {
-        const type: string = getType((<vi.TaskNode>x).task);
-        platforms.add(PluginHost.instance.task2Platform[type]);
-    });
-    if(platforms.size > 1) {
-        throw new Error("We support only one platform in a single job for now");
+    if(!node.job.platform || !node.job.platform.type) {
+        throw Error("Need to specify the platform type.");
     }
-    if(platforms.size === 0) {
-        throw new Error("There should be at least one task.");
-    }
-    this.platform = platforms.values().next().value;
-    
-    context.push({op: `platform.${this.platform}.init`, args: []});
+    this.platform = node.job.platform.type;
+    context.push({op: `platform.${this.platform}.init`, args: [node.job.platform.settings]});
 
     const dataTypes = new Set();
 

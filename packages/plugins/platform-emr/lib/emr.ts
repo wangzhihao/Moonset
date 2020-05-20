@@ -16,13 +16,14 @@ const EMR_ROLE = 'MoonsetEmrRole';
 const SCRIPT_RUNNER =
     's3://elasticmapreduce/libs/script-runner/script-runner.jar';
 
+
 export = {
   version: '1',
   plugin: 'platform',
   type: 'emr',
   taskType: ['hive', 'spark'],
 
-  init(host: PluginHost) {
+  init(host: PluginHost, settings: any) {
     const c = host.constructs;
 
     const props = {
@@ -109,12 +110,12 @@ export = {
           {'key': MC.TAG_MOONSET_TYPE, 'value': MC.TAG_MOONSET_TYPE_EMR},
           {'key': MC.TAG_MOONSET_ID, 'value': props.id},
         ],
-        releaseLabel: 'emr-5.29.0',
+        releaseLabel: settings.releaseLabel || 'emr-5.29.0',
         applications: props.emrApplications.map((x) =>{
           return {name: x};
         }),
         instances: {
-          instanceCount: 3,
+          instanceCount: settings.instanceCount || 3,
           masterInstanceType: 'm5.xlarge',
           slaveInstanceType: 'm5.xlarge',
           ec2SubnetId: (<ec2.Vpc>c[MC.VPC]).privateSubnets[0].subnetId,
@@ -123,6 +124,7 @@ export = {
           serviceAccessSecurityGroup: serviceSg.securityGroupId,
         },
         integrationPattern: sfn.ServiceIntegrationPattern.SYNC,
+        configurations: settings.configurations,
       }),
       resultPath: '$.EmrSettings',
     });
