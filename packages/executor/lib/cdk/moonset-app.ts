@@ -8,7 +8,7 @@ import * as ir from '../ir';
 import * as vi from '../visitor';
 import {PluginHost} from '../plugin';
 import * as path from 'path';
-import {Config, ConfigConstant as CC, Serde} from '@moonset/util';
+import {ConfigConstant as CC, Serde} from '@moonset/util';
 
 const c = PluginHost.instance.constructs;
 
@@ -61,15 +61,15 @@ function main() {
 
   c[MC.INFRA_STACK] = new cdk.Stack(<cdk.App>c[MC.CDK_APP], MC.INFRA_STACK, {
     env: {
-      account: Config.get(CC.WORKING_ACCOUNT),
-      region: Config.get(CC.WORKING_REGION),
+      account: process.env[CC.WORKING_ACCOUNT],
+      region: process.env[CC.WORKING_REGION],
     },
   });
 
   c[MC.SF_STACK] = new cdk.Stack(<cdk.App>c[MC.CDK_APP], MC.SF_STACK, {
     env: {
-      account: Config.get(CC.WORKING_ACCOUNT),
-      region: Config.get(CC.WORKING_REGION),
+      account: process.env[CC.WORKING_ACCOUNT],
+      region: process.env[CC.WORKING_REGION],
     },
   });
 
