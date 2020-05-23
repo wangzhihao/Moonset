@@ -15,7 +15,7 @@ export class Run{
   private async initSDK() {
     if (!aws.config.region) {
       aws.config.update({
-      region: Config.get(CC.WORKING_REGION)
+        region: process.env[CC.WORKING_REGION],
       });
     }
   }

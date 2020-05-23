@@ -6,6 +6,10 @@ import {Config, ConfigConstant as CC, logger} from '@moonset/util';
 export class Moonset {
   async run() {
     const argv = yargs
+        .option('account', {type: 'string', desc: 'The working account',
+          requiresArg: true})
+        .option('region', {type: 'string', desc: 'The working region',
+          requiresArg: true})
         .option('plugin', {type: 'string', desc: 'load plugin',
           requiresArg: true})
         .command(['config'], 'Configure the crendentials.')
@@ -26,6 +30,7 @@ export class Moonset {
     logger.debug('Command line arguments:', argv);
 
     this.loadPlugins(argv.plugin);
+    this.initEnvs(argv);
 
     const cmd = argv._[0];
     switch (cmd) {
@@ -33,11 +38,9 @@ export class Moonset {
         Config.ask();
         return;
       case 'deploy':
-        this.initEnvs();
         logger.info('Not implemented yet.');
         return;
       case 'run':
-        this.initEnvs();
         await new Executor().run(argv.job);
         return;
       case 'ir':
@@ -57,11 +60,22 @@ export class Moonset {
       });
     }
     logger.info(`The plugins: ${plugin}. ` +
-          `The hooks: ${Object.keys(PluginHost.instance.hooks)}, ` +
-          `The tasks: ${JSON.stringify(PluginHost.instance.task2Platform)}`);
+          `The hooks: ${Object.keys(PluginHost.instance.hooks)}.`);
   }
 
-  private initEnvs() {
+  private initEnvs(argv: any) {
+    if (argv.account) {
+      if (Array.isArray(argv.account)) {
+        argv.account = argv.account[argv.account.length - 1];
+      }
+      process.env[CC.WORKING_ACCOUNT] = argv.account;
+    }
+    if (argv.region) {
+      if (Array.isArray(argv.region)) {
+        argv.region = argv.region[argv.region.length - 1];
+      }
+      process.env[CC.WORKING_REGION] = argv.region;
+    }
     if (!process.env['AWS_ACCESS_KEY_ID'] &&
         Config.get(CC.WORKING_ACCESS_KEY)) {
       process.env['AWS_ACCESS_KEY_ID'] =

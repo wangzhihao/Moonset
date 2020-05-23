@@ -2,9 +2,10 @@ import * as cdk from '@aws-cdk/core';
 import * as sfn from '@aws-cdk/aws-stepfunctions';
 import * as sfnTasks from '@aws-cdk/aws-stepfunctions-tasks';
 import * as iam from '@aws-cdk/aws-iam';
+import * as s3 from '@aws-cdk/aws-s3';
 // eslint-disable-next-line
 import * as ec2 from '@aws-cdk/aws-ec2';
-import {Config, ConfigConstant as CC} from '@moonset/util';
+import {ConfigConstant as CC} from '@moonset/util';
 // eslint-disable-next-line
 import {PluginHost, MoonsetConstants as MC} from '@moonset/executor';
 import {StringAsset, FileAsset} from './asset';
@@ -33,8 +34,8 @@ export = {
 
     c[EMR_STACK] = new cdk.Stack(<cdk.App>c[MC.CDK_APP], EMR_STACK, {
       env: {
-        account: Config.get(CC.WORKING_ACCOUNT),
-        region: Config.get(CC.WORKING_REGION),
+        account: process.env[CC.WORKING_ACCOUNT],
+        region: process.env[CC.WORKING_REGION],
       },
     });
 
@@ -98,11 +99,12 @@ export = {
     serviceSg.addEgressRule(emrSg, ec2.Port.tcp(8443));
     emrSg.addIngressRule(serviceSg, ec2.Port.tcp(8443));
 
+    const emrLogBucket = new s3.Bucket(c[MC.SF_STACK], 'emrLogBucket', {});
     // eslint-disable-next-line
     const emrCreateTask = new sfn.Task(<cdk.Stack>c[MC.SF_STACK], 'emrCluster', {
       task: new sfnTasks.EmrCreateCluster({
         visibleToAllUsers: true,
-        logUri: Config.get(CC.EMR_LOG),
+        logUri: `s3://${emrLogBucket.bucketName}/emr_logs`,
         clusterRole: ec2Role,
         name: sfn.Data.stringAt('$.EmrSettings.ClusterName'),
         serviceRole: emrRole,

@@ -18,12 +18,22 @@ export class RunVisitor extends vi.SimpleVisitor<IR[]> {
 
   platform: string;
 
+  settings: any;
+
   visitJob(node: vi.JobNode, context: IR[]) {
     if(!node.job.platform || !node.job.platform.type) {
-        throw Error("Need to specify the platform type.");
+        this.platform = 'emr';
+    } else {
+        this.platform = node.job.platform.type;
     }
-    this.platform = node.job.platform.type;
-    context.push({op: `platform.${this.platform}.init`, args: [node.job.platform.settings]});
+
+    if(!node.job.platform || !node.job.platform.settings) {
+        this.settings= {};
+    } else {
+        this.settings  = node.job.platform.settings;
+    }
+
+    context.push({op: `platform.${this.platform}.init`, args: [this.settings]});
 
     const dataTypes = new Set();
 

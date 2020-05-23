@@ -1,6 +1,7 @@
 import {Serde} from './serde';
 import * as inquirer from 'inquirer';
 import * as os from 'os';
+import * as fs from 'fs';
 import * as path from 'path';
 
 const CONFIG_FILE = '.moonsetrc';
@@ -11,7 +12,6 @@ export const ConfigConstant = {
   WORKING_REGION: 'WORKING_REGION',
   WORKING_ACCESS_KEY: 'WORKING_ACCESS_KEY',
   WORKING_SECRET_KEY: 'WORKING_SECRET_KEY',
-  EMR_LOG: 'EMR_LOG',
 };
 
 const questions = [
@@ -36,19 +36,12 @@ const questions = [
     name: ConfigConstant.WORKING_SECRET_KEY,
     message: 'The working aws account secret key.',
   },
-  {
-    type: 'input',
-    name: ConfigConstant.EMR_LOG,
-    message: 'The EMR log location in S3.',
-  },
 ];
 
 export class Config {
   static get(key: string) {
+    if (!fs.existsSync(CONFIG_PATH)) return undefined;
     const data = Serde.fromFile<{[k: string]: string}>(CONFIG_PATH);
-    if (!data[key]) {
-      throw Error(`${key} doesn't exist in ${CONFIG_PATH}.`);
-    }
     return data[key];
   }
 
