@@ -10,24 +10,40 @@ import {MoonsetConstants as MC} from './constants';
 import {Config, ConfigConstant as CC, logger, Serde} from '@moonset/util';
 import * as execa from 'execa';
 import * as path from 'path';
+import {CredentialPlugins} from 'aws-cdk/lib/api/aws-auth/credential-plugins';
+import {Mode} from 'aws-cdk';
 
 export class Run{
   private async initSDK() {
-    if (!aws.config.region) {
+    if (!  process.env[CC.WORKING_ACCOUNT]) {
+        throw new Error("The working account is not specified.");
+    }
+    const credentials = await new CredentialPlugins().fetchCredentialsFor(
+        process.env[CC.WORKING_ACCOUNT]!,
+        Mode.ForWriting
+    );
+    
+    if (credentials) {
       aws.config.update({
-        region: process.env[CC.WORKING_REGION],
+          credentials: credentials
       });
     }
+      aws.config.update({
+        region: process.env[CC.WORKING_REGION]
+      });
   }
 
   private async deploy() {
+    const cdkPlugins = PluginHost.instance.cdkPlugins.map(p => {
+        return `--plugin=${p}`;
+      });
     // https://github.com/aws/aws-cdk/issues/3414
     const command = execa(`${require.resolve('aws-cdk/bin/cdk')}`, [
       'deploy',
       '*',
       '--requireApproval=never',
       `--app=${path.join(MC.BUILD_TMP_DIR, MC.CDK_OUT_DIR)}`,
-    ], {stdio: ['ignore', 'pipe', 'pipe']});
+    ].concat(cdkPlugins), {stdio: ['ignore', 'pipe', 'pipe']});
 
     if (command.stdout) {
       command.stdout.pipe(process.stdout);

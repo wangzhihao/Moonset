@@ -1,4 +1,5 @@
 import * as cdk from '@aws-cdk/core';
+import {PluginHost as CdkPluginHost} from 'aws-cdk';
 import * as sfn from '@aws-cdk/aws-stepfunctions';
 
 export interface DataPlugin {
@@ -36,6 +37,7 @@ export class PluginHost {
 
   readonly hooks: { [key: string]: Function; } = {};
   readonly plugins: string[] = [];
+  readonly cdkPlugins: string[] = [];
   constructs: { [key: string]: any; } = {}; //TODO: too open
 
   id: string;
@@ -61,13 +63,15 @@ export class PluginHost {
           this.hooks[`data.${plugin.type}.init`] = plugin.init;
           this.hooks[`data.${plugin.type}.import`] = plugin.import;
           this.hooks[`data.${plugin.type}.export`] = plugin.export;
+          this.plugins.push(moduleSpec);
       } else if (isPlatformPlugin(plugin)) {
           this.hooks[`platform.${plugin.type}.init`] = plugin.init;
           this.hooks[`platform.${plugin.type}.task`] = plugin.task;
+          this.plugins.push(moduleSpec);
       } else {
-        throw new Error(`Module ${moduleSpec} does not define a valid plug-in.`);
+            CdkPluginHost.instance.load(plugin);
+          this.cdkPlugins.push(moduleSpec);
       }
-      this.plugins.push(moduleSpec);
     function isDataPlugin(x: any): x is DataPlugin {
       return x != null && x.plugin === 'data' && x.version === '1';
     }
