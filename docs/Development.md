@@ -37,7 +37,5 @@ npx lerna exec -- npx npm-check-updates -u
 The packages are publish in NPM. Here are some links:
 
 * https://www.npmjs.com/package/moonset
-* https://www.npmjs.com/package/@moonset/model
-* https://www.npmjs.com/package/@moonset/executor
-* https://www.npmjs.com/package/@moonset/util
+* https://www.npmjs.com/search?q=%40moonset
 
