@@ -34,35 +34,31 @@ export class Run{
   }
 
   private async deploy() {
-    const cdkPlugins = PluginHost.instance.cdkPlugins.map(p => {
-        return `--plugin=${p}`;
-      });
-    // https://github.com/aws/aws-cdk/issues/3414
-    const command = execa(`${require.resolve('aws-cdk/bin/cdk')}`, [
+      await this.execute([
       'deploy',
       '*',
       '--requireApproval=never',
       `--app=${path.join(MC.BUILD_TMP_DIR, MC.CDK_OUT_DIR)}`,
-    ].concat(cdkPlugins), {stdio: ['ignore', 'pipe', 'pipe']});
-
-    if (command.stdout) {
-      command.stdout.pipe(process.stdout);
-    }
-    if (command.stderr) {
-      command.stderr.pipe(process.stderr);
-    }
-    await command;
+    ]);
   }
 
   private async synth() {
-    const cdkPlugins = PluginHost.instance.cdkPlugins.map(p => {
-        return `--plugin=${p}`;
-      });
-    const command = execa(`${require.resolve('aws-cdk/bin/cdk')}`, [
+      await this.execute([
       'synth',
        `--app="node ${path.resolve(__dirname, 'cdk', 'moonset-app.js')}"`,
        `--output=${path.join(MC.BUILD_TMP_DIR, MC.CDK_OUT_DIR)}`
-    ].concat(cdkPlugins), {stdio: ['ignore', 'pipe', 'pipe']});
+    ]);
+  }
+
+  private async execute(args: string[]) {
+    const cdkPlugins = PluginHost.instance.cdkPlugins.map(p => {
+        return `--plugin=${p}`;
+      });
+    const command = execa(
+        `${require.resolve('aws-cdk/bin/cdk')}`,
+        args.concat(cdkPlugins), 
+        {stdio: ['ignore', 'pipe', 'pipe']}
+    );
 
     if (command.stdout) {
       command.stdout.pipe(process.stdout);
