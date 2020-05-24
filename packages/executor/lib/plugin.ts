@@ -69,7 +69,7 @@ export class PluginHost {
           this.hooks[`platform.${plugin.type}.task`] = plugin.task;
           this.plugins.push(moduleSpec);
       } else {
-            CdkPluginHost.instance.load(plugin);
+            CdkPluginHost.instance.load(moduleSpec);
           this.cdkPlugins.push(moduleSpec);
       }
     function isDataPlugin(x: any): x is DataPlugin {

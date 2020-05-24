@@ -15,7 +15,7 @@ import {Mode} from 'aws-cdk';
 
 export class Run{
   private async initSDK() {
-    if (!  process.env[CC.WORKING_ACCOUNT]) {
+    if (!process.env[CC.WORKING_ACCOUNT]) {
         throw new Error("The working account is not specified.");
     }
     const credentials = await new CredentialPlugins().fetchCredentialsFor(
@@ -55,11 +55,14 @@ export class Run{
   }
 
   private async synth() {
+    const cdkPlugins = PluginHost.instance.cdkPlugins.map(p => {
+        return `--plugin=${p}`;
+      });
     const command = execa(`${require.resolve('aws-cdk/bin/cdk')}`, [
       'synth',
        `--app="node ${path.resolve(__dirname, 'cdk', 'moonset-app.js')}"`,
        `--output=${path.join(MC.BUILD_TMP_DIR, MC.CDK_OUT_DIR)}`
-    ], {stdio: ['ignore', 'pipe', 'pipe']});
+    ].concat(cdkPlugins), {stdio: ['ignore', 'pipe', 'pipe']});
 
     if (command.stdout) {
       command.stdout.pipe(process.stdout);
