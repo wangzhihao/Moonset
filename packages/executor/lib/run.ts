@@ -24,13 +24,9 @@ export class Run{
     );
     
     if (credentials) {
-      aws.config.update({
-          credentials: credentials
-      });
+        aws.config.credentials = credentials;
     }
-      aws.config.update({
-        region: process.env[CC.WORKING_REGION]
-      });
+    aws.config.region = process.env[CC.WORKING_REGION];
   }
 
   private async deploy() {
