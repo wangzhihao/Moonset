@@ -12,9 +12,7 @@ npm run cli -- --help
 npm run cli -- run  \
     --plugin $(readlink -f ../plugins/platform-emr/)  \
     --plugin $(readlink -f ../plugins/data-glue/)  \
-    --job  '{"task": [
-        {"hive": {"sql": "show tables;"}}
-    ]}'
+    --job  '{}'
 ```
 
 All packages should maintain the same version by lerna. The following are some
