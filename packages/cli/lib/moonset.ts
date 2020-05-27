@@ -1,7 +1,7 @@
 import 'source-map-support/register';
 import * as yargs from 'yargs';
 import {PluginHost, Executor} from '@moonset/executor';
-import {Config, ConfigConstant as CC, logger} from '@moonset/util';
+import {Config, ConfigConstant as CC, logger, CONFIG_PATH} from '@moonset/util';
 
 export class Moonset {
   async run() {
@@ -78,11 +78,13 @@ export class Moonset {
     }
     if (!process.env['AWS_ACCESS_KEY_ID'] &&
         Config.get(CC.WORKING_ACCESS_KEY)) {
+      logger.info(`Fetch AWS_ACCESS_KEY_ID from ${CONFIG_PATH}`);
       process.env['AWS_ACCESS_KEY_ID'] =
             Config.get(CC.WORKING_ACCESS_KEY);
     }
     if (!process.env['AWS_SECRET_ACCESS_KEY']&&
         Config.get(CC.WORKING_SECRET_KEY)) {
+      logger.info(`Fetch AWS_SECRET_ACCESS_KEY from ${CONFIG_PATH}`);
       process.env['AWS_SECRET_ACCESS_KEY'] =
             Config.get(CC.WORKING_SECRET_KEY);
     }
