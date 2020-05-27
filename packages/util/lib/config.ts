@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const CONFIG_FILE = '.moonsetrc';
-const CONFIG_PATH = path.join(os.homedir(), CONFIG_FILE);
+export const CONFIG_PATH = path.join(os.homedir(), CONFIG_FILE);
 
 export const ConfigConstant = {
   WORKING_ACCOUNT: 'WORKING_ACCOUNT',
