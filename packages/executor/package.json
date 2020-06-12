@@ -1,6 +1,6 @@
 {
   "name": "@moonset/executor",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "description": "The Moonset Executor",
   "keywords": [
     "AWS",
@@ -40,8 +40,8 @@
     "@aws-cdk/aws-stepfunctions": "^1.41.0",
     "@aws-cdk/aws-stepfunctions-tasks": "^1.41.0",
     "@aws-cdk/core": "^1.41.0",
-    "@moonset/model": "^0.0.20",
-    "@moonset/util": "^0.0.20",
+    "@moonset/model": "^0.0.21",
+    "@moonset/util": "^0.0.21",
     "@types/node": "^14.0.5",
     "@types/uuid": "^8.0.0",
     "aws-cdk": "^1.41.0",
