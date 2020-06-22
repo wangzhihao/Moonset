@@ -64,6 +64,12 @@ export class Moonset {
   }
 
   private initEnvs(argv: any) {
+    if (Config.get(CC.WORKING_ACCOUNT)) {
+      process.env[CC.WORKING_ACCOUNT] = Config.get(CC.WORKING_ACCOUNT);
+    }
+    if (Config.get(CC.WORKING_REGION)) {
+      process.env[CC.WORKING_REGION] = Config.get(CC.WORKING_REGION);
+    }
     if (argv.account) {
       if (Array.isArray(argv.account)) {
         argv.account = argv.account[argv.account.length - 1];
