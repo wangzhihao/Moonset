@@ -31,7 +31,7 @@
     "url": "https://github.com/FBAChinaOpenSource/Moonset/issues"
   },
   "dependencies": {
-    "@moonset/util": "^0.0.20",
-    "protobufjs": "^6.9.0"
+    "@moonset/util": "0.0.20",
+    "protobufjs": "6.9.0"
   }
 }
