@@ -29,6 +29,12 @@ export class Run{
     aws.config.region = process.env[CC.WORKING_REGION];
   }
 
+  private async getCurrentUser() {
+    const iam = new aws.IAM();
+    const currentUser = await iam.getUser().promise();
+    return currentUser;
+  }
+
   private async deploy() {
       await this.execute([
       'deploy',
@@ -66,8 +72,6 @@ export class Run{
   }
 
   private async invoke(id: string) {
-    await this.initSDK();
-
     const tagsClient = new TagAPI();
     const resources = await tagsClient.getResources({
       TagFilters: [
@@ -101,10 +105,15 @@ export class Run{
 
     const id = uuid();
 
+    await this.initSDK();
+
+    const currentUser = await this.getCurrentUser();
+
     Serde.toFile({
         id,
         commands,
         plugins: PluginHost.instance.plugins,
+        userName: currentUser.User.UserName,
     }, path.join(MC.BUILD_TMP_DIR, MC.MOONSET_PROPS));
 
     await this.synth();

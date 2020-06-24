@@ -16,6 +16,8 @@ export interface MoonsetProps {
 
     id: string;
 
+    userName: string;
+
     plugins: string[];
 
     commands: ir.IR[];
@@ -52,6 +54,7 @@ function main() {
       path.join(MC.BUILD_TMP_DIR, MC.MOONSET_PROPS));
 
   PluginHost.instance.id = props.id;
+  PluginHost.instance.userName = props.userName;
   props.plugins.forEach((plugin) => {
     PluginHost.instance.load(plugin);
   });
@@ -59,19 +62,21 @@ function main() {
 
   c[MC.CDK_APP] = new cdk.App();
 
-  c[MC.INFRA_STACK] = new cdk.Stack(<cdk.App>c[MC.CDK_APP], MC.INFRA_STACK, {
-    env: {
-      account: process.env[CC.WORKING_ACCOUNT],
-      region: process.env[CC.WORKING_REGION],
-    },
-  });
+  c[MC.INFRA_STACK] = new cdk.Stack(<cdk.App>c[MC.CDK_APP],
+      MC.INFRA_STACK + '-' + props.userName, {
+        env: {
+          account: process.env[CC.WORKING_ACCOUNT],
+          region: process.env[CC.WORKING_REGION],
+        },
+      });
 
-  c[MC.SF_STACK] = new cdk.Stack(<cdk.App>c[MC.CDK_APP], MC.SF_STACK, {
-    env: {
-      account: process.env[CC.WORKING_ACCOUNT],
-      region: process.env[CC.WORKING_REGION],
-    },
-  });
+  c[MC.SF_STACK] = new cdk.Stack(<cdk.App>c[MC.CDK_APP],
+      MC.SF_STACK + '-' + props.userName, {
+        env: {
+          account: process.env[CC.WORKING_ACCOUNT],
+          region: process.env[CC.WORKING_REGION],
+        },
+      });
 
   network();
 

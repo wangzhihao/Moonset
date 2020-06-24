@@ -32,12 +32,13 @@ export = {
       emrApplications: ['Hive', 'Spark'],
     };
 
-    c[EMR_STACK] = new cdk.Stack(<cdk.App>c[MC.CDK_APP], EMR_STACK, {
-      env: {
-        account: process.env[CC.WORKING_ACCOUNT],
-        region: process.env[CC.WORKING_REGION],
-      },
-    });
+    c[EMR_STACK] = new cdk.Stack(<cdk.App>c[MC.CDK_APP],
+        EMR_STACK + '-' + host.userName, {
+          env: {
+            account: process.env[CC.WORKING_ACCOUNT],
+            region: process.env[CC.WORKING_REGION],
+          },
+        });
 
     // eslint-disable-next-line
     const ec2Role = new iam.Role(<cdk.Stack>c[EMR_STACK], EMR_EC2_ROLE, {
@@ -84,7 +85,7 @@ export = {
 
     const emrSettings = new sfn.Pass(<cdk.Stack>c[MC.SF_STACK], 'emrSettings', {
       result: sfn.Result.fromObject({
-        ClusterName: `MoonsetEMR-${props.id}`,
+        ClusterName: `MoonsetEMR-${host.userName}-${props.id}`,
       }),
       resultPath: '$.EmrSettings',
     });
