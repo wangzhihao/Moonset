@@ -29,10 +29,12 @@ export class Run{
     aws.config.region = process.env[CC.WORKING_REGION];
   }
 
-  private async getCurrentUser() {
-    const iam = new aws.IAM();
-    const currentUser = await iam.getUser().promise();
-    return currentUser;
+  // It might be a user or a role.
+  private async getCurrentUserName() {
+    const sts = new aws.STS();
+    const currentUser = await sts.getCallerIdentity().promise();
+    logger.info(`Current user is ${JSON.stringify(currentUser)}`);
+    return currentUser.Arn!.split('/').slice(-1)[0];
   }
 
   private async deploy() {
@@ -107,13 +109,11 @@ export class Run{
 
     await this.initSDK();
 
-    const currentUser = await this.getCurrentUser();
-
     Serde.toFile({
         id,
         commands,
         plugins: PluginHost.instance.plugins,
-        userName: currentUser.User.UserName,
+        userName: await this.getCurrentUserName(),
     }, path.join(MC.BUILD_TMP_DIR, MC.MOONSET_PROPS));
 
     await this.synth();

@@ -42,9 +42,10 @@ function stepfunction(props: MoonsetProps) {
   for (let i = 1; i < commands.length; i++) {
     chain = chain.next(commands[i]);
   }
-  const emrStepFunction = new sfn.StateMachine(c[MC.SF_STACK], MC.SF, {
-    definition: chain,
-  });
+  const emrStepFunction = new sfn.StateMachine(c[MC.SF_STACK],
+      MC.SF + '-' + props.userName, {
+        definition: chain,
+      });
   cdk.Tag.add(emrStepFunction, MC.TAG_MOONSET_TYPE, MC.TAG_MOONSET_TYPE_SF);
   cdk.Tag.add(emrStepFunction, MC.TAG_MOONSET_ID, props.id);
 }
