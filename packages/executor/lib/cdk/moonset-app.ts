@@ -16,6 +16,8 @@ export interface MoonsetProps {
 
     id: string;
 
+    session: string;
+
     plugins: string[];
 
     commands: ir.IR[];
@@ -40,9 +42,10 @@ function stepfunction(props: MoonsetProps) {
   for (let i = 1; i < commands.length; i++) {
     chain = chain.next(commands[i]);
   }
-  const emrStepFunction = new sfn.StateMachine(c[MC.SF_STACK], MC.SF, {
-    definition: chain,
-  });
+  const emrStepFunction = new sfn.StateMachine(c[MC.SF_STACK],
+      MC.SF + '-' + props.session, {
+        definition: chain,
+      });
   cdk.Tag.add(emrStepFunction, MC.TAG_MOONSET_TYPE, MC.TAG_MOONSET_TYPE_SF);
   cdk.Tag.add(emrStepFunction, MC.TAG_MOONSET_ID, props.id);
 }
@@ -52,6 +55,7 @@ function main() {
       path.join(MC.BUILD_TMP_DIR, MC.MOONSET_PROPS));
 
   PluginHost.instance.id = props.id;
+  PluginHost.instance.session = props.session;
   props.plugins.forEach((plugin) => {
     PluginHost.instance.load(plugin);
   });
@@ -59,19 +63,21 @@ function main() {
 
   c[MC.CDK_APP] = new cdk.App();
 
-  c[MC.INFRA_STACK] = new cdk.Stack(<cdk.App>c[MC.CDK_APP], MC.INFRA_STACK, {
-    env: {
-      account: process.env[CC.WORKING_ACCOUNT],
-      region: process.env[CC.WORKING_REGION],
-    },
-  });
+  c[MC.INFRA_STACK] = new cdk.Stack(<cdk.App>c[MC.CDK_APP],
+      MC.INFRA_STACK + '-' + props.session, {
+        env: {
+          account: process.env[CC.WORKING_ACCOUNT],
+          region: process.env[CC.WORKING_REGION],
+        },
+      });
 
-  c[MC.SF_STACK] = new cdk.Stack(<cdk.App>c[MC.CDK_APP], MC.SF_STACK, {
-    env: {
-      account: process.env[CC.WORKING_ACCOUNT],
-      region: process.env[CC.WORKING_REGION],
-    },
-  });
+  c[MC.SF_STACK] = new cdk.Stack(<cdk.App>c[MC.CDK_APP],
+      MC.SF_STACK + '-' + props.session, {
+        env: {
+          account: process.env[CC.WORKING_ACCOUNT],
+          region: process.env[CC.WORKING_REGION],
+        },
+      });
 
   network();
 
