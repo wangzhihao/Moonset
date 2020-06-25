@@ -29,6 +29,19 @@ export class Run{
     aws.config.region = process.env[CC.WORKING_REGION];
   }
 
+  // It might be a user or a role.
+  private async getSession() {
+    const sts = new aws.STS();
+    const currentUser = await sts.getCallerIdentity().promise();
+    const session = currentUser.Arn!
+          .split('/')
+          .slice(-1)[0]
+          .replace(/[^A-Za-z0-9-]/g, '-');
+    logger.info(`Current user is ${JSON.stringify(currentUser)},`
+        + ` the extract session id is ${session}.`);
+    return session;
+  }
+
   private async deploy() {
       await this.execute([
       'deploy',
@@ -66,8 +79,6 @@ export class Run{
   }
 
   private async invoke(id: string) {
-    await this.initSDK();
-
     const tagsClient = new TagAPI();
     const resources = await tagsClient.getResources({
       TagFilters: [
@@ -101,10 +112,13 @@ export class Run{
 
     const id = uuid();
 
+    await this.initSDK();
+
     Serde.toFile({
         id,
         commands,
         plugins: PluginHost.instance.plugins,
+        session: await this.getSession(),
     }, path.join(MC.BUILD_TMP_DIR, MC.MOONSET_PROPS));
 
     await this.synth();
