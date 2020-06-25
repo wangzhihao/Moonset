@@ -42,7 +42,7 @@ export class PluginHost {
 
   id: string;
 
-  userName: string;
+  session: string;
 
   commands: sfn.IChainable[] = [];
     

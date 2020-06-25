@@ -30,11 +30,16 @@ export class Run{
   }
 
   // It might be a user or a role.
-  private async getCurrentUserName() {
+  private async getSession() {
     const sts = new aws.STS();
     const currentUser = await sts.getCallerIdentity().promise();
-    logger.info(`Current user is ${JSON.stringify(currentUser)}`);
-    return currentUser.Arn!.split('/').slice(-1)[0];
+    const session = currentUser.Arn!
+          .split('/')
+          .slice(-1)[0]
+          .replace(/[^A-Za-z0-9-]/g, '-');
+    logger.info(`Current user is ${JSON.stringify(currentUser)},`
+        + ` the extract session id is ${session}.`);
+    return session;
   }
 
   private async deploy() {
@@ -113,7 +118,7 @@ export class Run{
         id,
         commands,
         plugins: PluginHost.instance.plugins,
-        userName: await this.getCurrentUserName(),
+        session: await this.getSession(),
     }, path.join(MC.BUILD_TMP_DIR, MC.MOONSET_PROPS));
 
     await this.synth();

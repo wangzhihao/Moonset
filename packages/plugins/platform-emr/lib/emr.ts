@@ -33,7 +33,7 @@ export = {
     };
 
     c[EMR_STACK] = new cdk.Stack(<cdk.App>c[MC.CDK_APP],
-        EMR_STACK + '-' + host.userName, {
+        EMR_STACK + '-' + host.session, {
           env: {
             account: process.env[CC.WORKING_ACCOUNT],
             region: process.env[CC.WORKING_REGION],
@@ -85,7 +85,7 @@ export = {
 
     const emrSettings = new sfn.Pass(<cdk.Stack>c[MC.SF_STACK], 'emrSettings', {
       result: sfn.Result.fromObject({
-        ClusterName: `MoonsetEMR-${host.userName}-${props.id}`,
+        ClusterName: `MoonsetEMR-${host.session}-${props.id}`,
       }),
       resultPath: '$.EmrSettings',
     });

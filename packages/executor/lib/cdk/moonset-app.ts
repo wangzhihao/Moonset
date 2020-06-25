@@ -16,7 +16,7 @@ export interface MoonsetProps {
 
     id: string;
 
-    userName: string;
+    session: string;
 
     plugins: string[];
 
@@ -43,7 +43,7 @@ function stepfunction(props: MoonsetProps) {
     chain = chain.next(commands[i]);
   }
   const emrStepFunction = new sfn.StateMachine(c[MC.SF_STACK],
-      MC.SF + '-' + props.userName, {
+      MC.SF + '-' + props.session, {
         definition: chain,
       });
   cdk.Tag.add(emrStepFunction, MC.TAG_MOONSET_TYPE, MC.TAG_MOONSET_TYPE_SF);
@@ -55,7 +55,7 @@ function main() {
       path.join(MC.BUILD_TMP_DIR, MC.MOONSET_PROPS));
 
   PluginHost.instance.id = props.id;
-  PluginHost.instance.userName = props.userName;
+  PluginHost.instance.session = props.session;
   props.plugins.forEach((plugin) => {
     PluginHost.instance.load(plugin);
   });
@@ -64,7 +64,7 @@ function main() {
   c[MC.CDK_APP] = new cdk.App();
 
   c[MC.INFRA_STACK] = new cdk.Stack(<cdk.App>c[MC.CDK_APP],
-      MC.INFRA_STACK + '-' + props.userName, {
+      MC.INFRA_STACK + '-' + props.session, {
         env: {
           account: process.env[CC.WORKING_ACCOUNT],
           region: process.env[CC.WORKING_REGION],
@@ -72,7 +72,7 @@ function main() {
       });
 
   c[MC.SF_STACK] = new cdk.Stack(<cdk.App>c[MC.CDK_APP],
-      MC.SF_STACK + '-' + props.userName, {
+      MC.SF_STACK + '-' + props.session, {
         env: {
           account: process.env[CC.WORKING_ACCOUNT],
           region: process.env[CC.WORKING_REGION],
