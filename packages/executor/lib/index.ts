@@ -8,6 +8,10 @@ import {Run} from './run';
 export class Executor {
   constructor() {}
 
+  async deploy() {
+
+  }
+
   async run(job: any) {
     await new Run().start(this.getRootNode(job));
   }
