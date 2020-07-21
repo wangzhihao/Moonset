@@ -82,6 +82,14 @@ export class Moonset {
       }
       process.env[CC.WORKING_REGION] = argv.region;
     }
+    // TODO: This env credentials will be read during cdk deploy. This will
+    // be problematic when we have multiple accounts like working account
+    // and reference accounts. Currently we have only working account
+    // so it's fine for now.
+    //
+    // We might want to support a very simple CDK plugin to support working
+    // account and reference account's credentials.
+
     if (!process.env['AWS_ACCESS_KEY_ID'] &&
         Config.get(CC.WORKING_ACCESS_KEY)) {
       logger.info(`Fetch AWS_ACCESS_KEY_ID from ${CONFIG_PATH}`);

@@ -19,6 +19,8 @@
         "@typescript-eslint"
     ],
     "rules": {
-        "require-jsdoc": "off"
+        "require-jsdoc": "off",
+        "valid-jsdoc": "off",
+        "no-unused-vars": "off"
     }
 }

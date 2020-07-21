@@ -1,14 +1,11 @@
 import * as cdk from '@aws-cdk/core';
-import * as sfn from '@aws-cdk/aws-stepfunctions';
-import * as sfnTasks from '@aws-cdk/aws-stepfunctions-tasks';
 import * as iam from '@aws-cdk/aws-iam';
 import * as s3 from '@aws-cdk/aws-s3';
-// eslint-disable-next-line
 import * as ec2 from '@aws-cdk/aws-ec2';
-import {ConfigConstant as CC} from '@moonset/util';
-// eslint-disable-next-line
+import {ConfigConstant as CC, CDKResourceReader, logger} from '@moonset/util';
+import {ISDK, SDKProvider, S3AssetUploader} from '@moonset/util';
 import {PluginHost, MoonsetConstants as MC} from '@moonset/executor';
-import {StringAsset, FileAsset} from './asset';
+import * as EMR from 'aws-sdk/clients/emr';
 
 const EMR_STACK = 'MoonsetEmrStack';
 const EMR_EC2_ROLE = 'MoonsetEmrEc2Role';
@@ -17,20 +14,16 @@ const EMR_ROLE = 'MoonsetEmrRole';
 const SCRIPT_RUNNER =
     's3://elasticmapreduce/libs/script-runner/script-runner.jar';
 
+const steps: EMR.Types.StepConfigList = [];
 
 export = {
   version: '1',
   plugin: 'platform',
   type: 'emr',
-  taskType: ['hive', 'spark'],
+  steps: steps,
 
-  init(host: PluginHost, settings: any) {
+  init(host: PluginHost) {
     const c = host.constructs;
-
-    const props = {
-      id: host.id,
-      emrApplications: ['Hive', 'Spark'],
-    };
 
     c[EMR_STACK] = new cdk.Stack(<cdk.App>c[MC.CDK_APP],
         EMR_STACK + '-' + host.session, {
@@ -61,6 +54,8 @@ export = {
           actions: ['sts:AssumeRole'],
           resources: ['*'],
         }));
+    // eslint-disable-next-line
+    cdk.Tag.add(ec2Role, MC.TAG_MOONSET_TYPE, MC.TAG_MOONSET_TYPE_EMR_EC2_ROLE);
 
     // eslint-disable-next-line
     new iam.CfnInstanceProfile(<cdk.Stack>c[EMR_STACK], EMR_EC2_PROFILE, {
@@ -75,7 +70,10 @@ export = {
     emrRole.addManagedPolicy(
         iam.ManagedPolicy.fromAwsManagedPolicyName(
             'service-role/AmazonElasticMapReduceRole'));
+    // eslint-disable-next-line
+    cdk.Tag.add(emrRole, MC.TAG_MOONSET_TYPE, MC.TAG_MOONSET_TYPE_EMR_ROLE);
 
+    // TODO Why we need this role?
     // eslint-disable-next-line
     new iam.CfnServiceLinkedRole(<cdk.Stack>c[EMR_STACK], 'AWSServiceRoleForEMRCleanup', {
       awsServiceName: 'elasticmapreduce.amazonaws.com',
@@ -83,96 +81,98 @@ export = {
       description: 'Allows EMR to terminate instances and delete resources from EC2 on your behalf.',
     });
 
-    const emrSettings = new sfn.Pass(<cdk.Stack>c[MC.SF_STACK], 'emrSettings', {
-      result: sfn.Result.fromObject({
-        ClusterName: `MoonsetEMR-${host.session}-${props.id}`,
-      }),
-      resultPath: '$.EmrSettings',
-    });
-
-    host.commands.push(emrSettings);
-
     const emrSg = <ec2.SecurityGroup>c[MC.VPC_SG];
     const serviceSg = new ec2.SecurityGroup(c[MC.INFRA_STACK], 'serviceSg', {
       vpc: <ec2.Vpc>c[MC.VPC],
     });
+    // eslint-disable-next-line
+    cdk.Tag.add(serviceSg, MC.TAG_MOONSET_TYPE, MC.TAG_MOONSET_TYPE_SERVICE_SECURITY_GROUP);
     // To prevent AWS EMR auto create ingress/egress rule.
     serviceSg.addEgressRule(emrSg, ec2.Port.tcp(8443));
     emrSg.addIngressRule(serviceSg, ec2.Port.tcp(8443));
 
-    const emrLogBucket = new s3.Bucket(c[MC.SF_STACK], 'emrLogBucket', {});
+    const logBucket = new s3.Bucket(c[MC.INFRA_STACK], 'logBucket', {});
     // eslint-disable-next-line
-    const emrCreateTask = new sfn.Task(<cdk.Stack>c[MC.SF_STACK], 'emrCluster', {
-      task: new sfnTasks.EmrCreateCluster({
-        visibleToAllUsers: true,
-        logUri: `s3://${emrLogBucket.bucketName}/emr_logs`,
-        clusterRole: ec2Role,
-        name: sfn.Data.stringAt('$.EmrSettings.ClusterName'),
-        serviceRole: emrRole,
-        tags: [
-          {'key': MC.TAG_MOONSET_TYPE, 'value': MC.TAG_MOONSET_TYPE_EMR},
-          {'key': MC.TAG_MOONSET_ID, 'value': props.id},
-        ],
-        releaseLabel: settings.releaseLabel || 'emr-5.29.0',
-        applications: props.emrApplications.map((x) =>{
-          return {name: x};
-        }),
-        instances: {
-          instanceCount: settings.instanceCount || 3,
-          masterInstanceType: 'm5.xlarge',
-          slaveInstanceType: 'm5.xlarge',
-          ec2SubnetId: (<ec2.Vpc>c[MC.VPC]).privateSubnets[0].subnetId,
-          emrManagedMasterSecurityGroup: emrSg.securityGroupId,
-          emrManagedSlaveSecurityGroup: emrSg.securityGroupId,
-          serviceAccessSecurityGroup: serviceSg.securityGroupId,
-        },
-        integrationPattern: sfn.ServiceIntegrationPattern.SYNC,
-        configurations: settings.configurations,
-      }),
-      resultPath: '$.EmrSettings',
-    });
-
-    host.commands.push(emrCreateTask);
+    cdk.Tag.add(logBucket, MC.TAG_MOONSET_TYPE, MC.TAG_MOONSET_TYPE_LOG_S3_BUCEKT);
   },
 
-  task(host: PluginHost, type: string, task: any) {
-    const c = host.constructs;
+  async task(host: PluginHost, type: string, task: any) {
+    const sdk = await SDKProvider.forWorkingAccount();
+    // For now we only have working account's cdk resources.
+    const resources = new CDKResourceReader(host.session, sdk);
+    const s3AssetUploader = new S3AssetUploader(
+        await resources.findS3Bucket(MC.TAG_MOONSET_TYPE_LOG_S3_BUCEKT),
+        'assets',
+        host.session,
+        host.id,
+        sdk,
+    );
     if (type === 'hive') {
+      // TODO we need a cleanup service to delete unused s3 files. One
+      // approach is to find them via the tags like session and id.
       let s3File;
       if (task.hive.sqlFile) {
         s3File = task.hive.sqlFile;
         if (!task.hive.sqlFile.startsWith('s3://')) {
-          s3File = new FileAsset(<cdk.Stack>c[MC.SF_STACK], `HiveSQL`, {
-            path: task.hive.sqlFile,
-          }).getS3Path();
+          s3File = await s3AssetUploader.uploadFile(task.hive.sqlFile);
         }
       } else if (task.hive.sql) {
-        s3File = new StringAsset(<cdk.Stack>c[MC.SF_STACK], `HiveSQL`, {
-          content: task.hive.sql,
-        }).getS3Path();
+        s3File = await s3AssetUploader.uploadData(task.hive.sql);
       } else {
         throw Error('Either sqlFile or sql must exist for hive.');
       }
 
-      const emrTask = new sfn.Task(<cdk.Stack>c[MC.SF_STACK], `HiveTask`, {
-        task: new sfnTasks.EmrAddStep({
-          clusterId: sfn.Data.stringAt('$.EmrSettings.ClusterId'),
-          name: 'HiveTask',
-          jar: SCRIPT_RUNNER,
-          args: [
+      const step = {
+        Name: 'HiveTask',
+        ActionOnFailure: 'TERMINATE_CLUSTER',
+        HadoopJarStep: {
+          Properties: [],
+          Jar: SCRIPT_RUNNER,
+          Args: [
             's3://elasticmapreduce/libs/hive/hive-script',
             '--run-hive-script',
             '--args',
             '-f',
             s3File,
           ],
-          actionOnFailure: sfnTasks.ActionOnFailure.TERMINATE_CLUSTER,
-          integrationPattern: sfn.ServiceIntegrationPattern.SYNC,
-        }),
-        resultPath: sfn.DISCARD,
-      });
-      host.commands.push(emrTask);
+        },
+      };
+      steps.push(step);
     }
+  },
+
+  async run(host: PluginHost) {
+    const sdk = await SDKProvider.forWorkingAccount();
+    // For now we only have working account's cdk resources.
+    const resources = new CDKResourceReader(host.session, sdk);
+    // EMR runs in working account.
+    const emr = sdk.emr();
+    /* eslint-disable */
+    const params = {
+        Name: `MoonsetEMR-${host.session}-${host.id}`,
+        Instances: {
+            InstanceCount: host.settings.instanceCount || 3,
+            MasterInstanceType: 'm5.xlarge',
+            SlaveInstanceType: 'm5.xlarge',
+            Ec2SubnetId: (await resources.findPrivateSubnet(MC.TAG_MOONSET_TYPE_VPC)).SubnetId!,
+            EmrManagedSlaveSecurityGroup: (await resources.findSecurityGroup(MC.TAG_MOONSET_TYPE_VPC_SERCURITY_GROUP)).GroupId!, 
+            EmrManagedMasterSecurityGroup: (await resources.findSecurityGroup(MC.TAG_MOONSET_TYPE_VPC_SERCURITY_GROUP)).GroupId!, 
+            ServiceAccessSecurityGroup: (await resources.findSecurityGroup(MC.TAG_MOONSET_TYPE_SERVICE_SECURITY_GROUP)).GroupId!,
+            KeepJobFlowAliveWhenNoSteps: true,
+        },
+        JobFlowRole: (await resources.findRole(MC.TAG_MOONSET_TYPE_EMR_EC2_ROLE)).RoleName!,
+        VisibleToAllUsers: true,
+        LogUri: `s3://${await resources.findS3Bucket(MC.TAG_MOONSET_TYPE_LOG_S3_BUCEKT)}/emr_logs`,
+        ServiceRole: (await resources.findRole(MC.TAG_MOONSET_TYPE_EMR_ROLE)).RoleName!,
+        ReleaseLabel: host.settings.releaseLabel || 'emr-5.29.0',
+        Applications: [
+            {Name: 'Spark'}, {Name: 'Hive'}
+        ],
+        Steps: steps
+    };
+    /* eslint-enable */
+    logger.info(`EMR will be created with params: ${JSON.stringify(params)}.`);
+    await emr.runJobFlow(params).promise();
   },
 }
 

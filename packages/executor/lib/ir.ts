@@ -1,9 +1,26 @@
 import * as vi from './visitor';
 import {PluginHost} from './plugin';
 
-export interface IR {
+/**
+ * The hook function for the plugin to integrate into.
+ * Here is a sample code to invoke this hook function.
+ *   const fn = PluginHost.instance.hooks[command.op];
+ *   await fn(PluginHost.instance, ...command.args);
+ */
+export interface MicroCommand {
     readonly op: string;
     readonly args: any[];
+}
+/**
+ * The intermediate representation of Moonset Executor.
+ *
+ * It contains an array of CDK commands and SDK commands. CDK commands are 
+ * synchronous and SDK commands are asynchronous. CDK commands are executed and
+ * deployed before SDK commands execute.
+ */
+export interface IR {
+    readonly cdk: MicroCommand[];
+    readonly sdk: MicroCommand[];
 }
 
 function getType(dataset: any): string {
@@ -14,13 +31,13 @@ function getType(dataset: any): string {
     return keys[0];
   }
 
-export class RunVisitor extends vi.SimpleVisitor<IR[]> {
+export class RunVisitor extends vi.SimpleVisitor<IR> {
 
   platform: string;
 
   settings: any;
 
-  visitJob(node: vi.JobNode, context: IR[]) {
+  visitJob(node: vi.JobNode, m: IR) {
     if(!node.job.platform || !node.job.platform.type) {
         this.platform = 'emr';
     } else {
@@ -32,8 +49,10 @@ export class RunVisitor extends vi.SimpleVisitor<IR[]> {
     } else {
         this.settings  = node.job.platform.settings;
     }
+    PluginHost.instance.platform = this.platform;
+    PluginHost.instance.settings = this.settings;
 
-    context.push({op: `platform.${this.platform}.init`, args: [this.settings]});
+    m.cdk.push({op: `platform.${this.platform}.init`, args: []});
 
     const dataTypes = new Set();
 
@@ -45,31 +64,33 @@ export class RunVisitor extends vi.SimpleVisitor<IR[]> {
     });
 
     dataTypes.forEach((type) => {
-        context.push({op: `data.${type}.init`, args: [this.platform]});
+        m.cdk.push({op: `data.${type}.init`, args: [this.platform]});
     });
 
-    node.outputs.map((x) => this.prepareOutput(<vi.OutputNode>x, context));
+    node.outputs.map((x) => this.prepareOutput(<vi.OutputNode>x, m));
 
-    this.visit(node, context);
+    this.visit(node, m);
+
+    m.sdk.push({op: `platform.${this.platform}.run`, args: []});
   }
 
-  private prepareOutput(node: vi.OutputNode, context: IR[]) {
+  private prepareOutput(node: vi.OutputNode, m: IR) {
     const type = getType(node.dataset);
-    context.push({op: `data.${type}.import`, args: [this.platform, node.dataset]});
+    m.sdk.push({op: `data.${type}.import`, args: [this.platform, node.dataset]});
   }
 
-  visitInput(node: vi.InputNode, context: IR[]) {
+  visitInput(node: vi.InputNode, m: IR) {
     const type = getType(node.dataset);
-    context.push({op: `data.${type}.import`, args: [this.platform, node.dataset]});
+    m.sdk.push({op: `data.${type}.import`, args: [this.platform, node.dataset]});
   }
 
-  visitOutput(node: vi.OutputNode, context: IR[]) {
+  visitOutput(node: vi.OutputNode, m: IR) {
     const type = getType(node.dataset);
-    context.push({op: `data.${type}.export`, args: [this.platform, node.dataset]});
+    m.sdk.push({op: `data.${type}.export`, args: [this.platform, node.dataset]});
   }
 
-  visitTask(node: vi.TaskNode, context: IR[]) {
+  visitTask(node: vi.TaskNode, m: IR) {
     const type = getType(node.task);
-    context.push({op: `platform.${this.platform}.task`, args: [type, node.task]});
+    m.sdk.push({op: `platform.${this.platform}.task`, args: [type, node.task]});
   }
 }

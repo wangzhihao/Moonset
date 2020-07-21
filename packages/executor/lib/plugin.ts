@@ -1,6 +1,6 @@
+import * as sfn from '@aws-cdk/aws-stepfunctions';
 import * as cdk from '@aws-cdk/core';
 import {PluginHost as CdkPluginHost} from 'aws-cdk';
-import * as sfn from '@aws-cdk/aws-stepfunctions';
 
 export interface DataPlugin {
 
@@ -25,11 +25,11 @@ export interface PlatformPlugin {
       
   type: string;
 
-  taskType: string[];
+  init: (host: PluginHost) => void;
 
-  init: (host: PluginHost, settings: any) => void;
+  task: (host: PluginHost, type: string, task: any) => Promise<any>;
 
-  task: (host: PluginHost, type: string, task: any) => void;
+  run: (host: PluginHost) => Promise<any>;
 }
 
 export class PluginHost {
@@ -39,13 +39,16 @@ export class PluginHost {
   readonly plugins: string[] = [];
   readonly cdkPlugins: string[] = [];
   constructs: { [key: string]: any; } = {}; //TODO: too open
+  platformPlugins: { [key: string]: any; } = {}; //TODO: too open
 
   id: string;
 
   session: string;
 
-  commands: sfn.IChainable[] = [];
-    
+  platform: string;
+
+  settings: any;
+
   constructor() {
     if (PluginHost.instance && PluginHost.instance !== this) {
       throw new Error('New instances of PluginHost must not be built. Use PluginHost.instance instead!');
@@ -69,7 +72,9 @@ export class PluginHost {
       } else if (isPlatformPlugin(plugin)) {
           this.hooks[`platform.${plugin.type}.init`] = plugin.init;
           this.hooks[`platform.${plugin.type}.task`] = plugin.task;
+          this.hooks[`platform.${plugin.type}.run`] = plugin.run;
           this.plugins.push(moduleSpec);
+          this.platformPlugins[plugin.type] = plugin;
       } else {
             CdkPluginHost.instance.load(moduleSpec);
           this.cdkPlugins.push(moduleSpec);
