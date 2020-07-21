@@ -4,34 +4,20 @@ import * as vi from './visitor';
 import * as ir from './ir';
 import {PluginHost} from './plugin';
 import * as cdk from './cdk';
-import * as aws from 'aws-sdk';
-import * as TagAPI from 'aws-sdk/clients/resourcegroupstaggingapi';
 import {MoonsetConstants as MC} from './constants';
 import {Config, ConfigConstant as CC, logger, Serde} from '@moonset/util';
+import {CommonConstants as MCC} from '@moonset/util';
+import {ISDK, SDKProvider} from '@moonset/util';
 import * as execa from 'execa';
 import * as path from 'path';
-import {CredentialPlugins} from 'aws-cdk/lib/api/aws-auth/credential-plugins';
-import {Mode} from 'aws-cdk';
 
 export class Run{
-  private async initSDK() {
-    if (!process.env[CC.WORKING_ACCOUNT]) {
-        throw new Error("The working account is not specified.");
-    }
-    const credentials = await new CredentialPlugins().fetchCredentialsFor(
-        process.env[CC.WORKING_ACCOUNT]!,
-        Mode.ForWriting
-    );
-    
-    if (credentials) {
-        aws.config.credentials = credentials;
-    }
-    aws.config.region = process.env[CC.WORKING_REGION];
-  }
+
+  private sdk: ISDK;
 
   // It might be a user or a role.
   private async getSession() {
-    const sts = new aws.STS();
+    const sts = this.sdk.sts();
     const currentUser = await sts.getCallerIdentity().promise();
     const session = currentUser.Arn!
           .split('/')
@@ -42,11 +28,12 @@ export class Run{
     return session;
   }
 
-  private async deploy() {
+  private async deploy(session: string) {
       await this.execute([
       'deploy',
       '*',
       '--requireApproval=never',
+      `--tags="${MCC.MOONSET_SESSION}=${session}"`, //tags all resources
       `--app=${path.join(MC.BUILD_TMP_DIR, MC.CDK_OUT_DIR)}`,
     ]);
   }
@@ -78,47 +65,33 @@ export class Run{
     await command;
   }
 
-  private async invoke(id: string) {
-    const tagsClient = new TagAPI();
-    const resources = await tagsClient.getResources({
-      TagFilters: [
-        {Key: MC.TAG_MOONSET_TYPE, Values: [MC.TAG_MOONSET_TYPE_SF]},
-        {Key: MC.TAG_MOONSET_ID, Values: [id]},
-      ],
-      ResourceTypeFilters: [
-        'states:stateMachine',
-      ],
-    }).promise();
-
-    if ( !resources ||
-            !resources.ResourceTagMappingList ||
-            resources.ResourceTagMappingList.length != 1 ||
-            !resources.ResourceTagMappingList[0].ResourceARN
-    ) {
-      throw new Error('The state machine should be uniquely identified.');
-    }
-
-    const sfnClient = new aws.StepFunctions();
-    await sfnClient.startExecution({
-      stateMachineArn: resources.ResourceTagMappingList[0].ResourceARN,
-    }).promise();
+  private async invoke(commands: ir.IR) {
+      for (let command of commands.sdk) {
+    const fn = PluginHost.instance.hooks[command.op];
+    await fn(PluginHost.instance, ...command.args);
+      }
   }
 
   async start(root: vi.RootNode) {
     const startTime = Date.now();
 
-    const commands: ir.IR[] = [];
+    const commands: ir.IR = {cdk: [], sdk: []};
     root.accept(new ir.RunVisitor(), commands);
 
     const id = uuid();
 
-    await this.initSDK();
+    this.sdk = await SDKProvider.forWorkingAccount();
 
+    const session = await this.getSession();
+    // TODO: we set session/id in two places for PluginHost.(Another one is in
+    // moonset-app.ts) Can we merge them into one?
+    PluginHost.instance.session = session;
+    PluginHost.instance.id = id;
     Serde.toFile({
         id,
         commands,
         plugins: PluginHost.instance.plugins,
-        session: await this.getSession(),
+        session
     }, path.join(MC.BUILD_TMP_DIR, MC.MOONSET_PROPS));
 
     await this.synth();
@@ -132,11 +105,11 @@ export class Run{
     // TODO However, since our tags contains UUID. every time it will redeploy
     // even the template is identical. We might need to change UUID to a
     // stable but unique tag.
-    await this.deploy();
+    await this.deploy(session);
 
     const deployTime = Date.now();
 
-    await this.invoke(id);
+    await this.invoke(commands);
 
     const invokeTime = Date.now();
 

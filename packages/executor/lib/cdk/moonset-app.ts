@@ -1,6 +1,6 @@
-import * as sfn from '@aws-cdk/aws-stepfunctions';
 import * as cdk from '@aws-cdk/core';
 import * as ec2 from '@aws-cdk/aws-ec2';
+import * as s3 from '@aws-cdk/aws-s3';
 import {MoonsetConstants as MC} from '../constants';
 // eslint-disable-next-line
 import * as ir from '../ir';
@@ -8,7 +8,7 @@ import * as ir from '../ir';
 import * as vi from '../visitor';
 import {PluginHost} from '../plugin';
 import * as path from 'path';
-import {ConfigConstant as CC, Serde} from '@moonset/util';
+import {CommonConstants as C, ConfigConstant as CC, Serde} from '@moonset/util';
 
 const c = PluginHost.instance.constructs;
 
@@ -20,34 +20,25 @@ export interface MoonsetProps {
 
     plugins: string[];
 
-    commands: ir.IR[];
+    commands: ir.IR;
 }
 
 function network() {
   // https://github.com/aws/aws-cdk/issues/3704
-  c[MC.VPC] = new ec2.Vpc(c[MC.INFRA_STACK], MC.VPC, {
+  const vpc = c[MC.VPC] = new ec2.Vpc(c[MC.INFRA_STACK], MC.VPC, {
     maxAzs: 1,
   });
+  // eslint-disable-next-line
+  cdk.Tag.add(vpc, C.TAG_MOONSET_TYPE, MC.TAG_MOONSET_TYPE_VPC);
 
   c[MC.VPC_SG] = new ec2.SecurityGroup(c[MC.INFRA_STACK], MC.VPC_SG, {
-    vpc: <ec2.Vpc>c[MC.VPC],
+    vpc: vpc,
   });
   // eslint-disable-next-line
-  (<ec2.SecurityGroup>c[MC.VPC_SG]).addIngressRule(<ec2.SecurityGroup>c[MC.VPC_SG], ec2.Port.allTraffic());
-}
+  cdk.Tag.add(<ec2.SecurityGroup>c[MC.VPC_SG], C.TAG_MOONSET_TYPE, MC.TAG_MOONSET_TYPE_VPC_SERCURITY_GROUP);
 
-function stepfunction(props: MoonsetProps) {
-  const commands = PluginHost.instance.commands;
-  let chain = sfn.Chain.start(commands[0]);
-  for (let i = 1; i < commands.length; i++) {
-    chain = chain.next(commands[i]);
-  }
-  const emrStepFunction = new sfn.StateMachine(c[MC.SF_STACK],
-      MC.SF + '-' + props.session, {
-        definition: chain,
-      });
-  cdk.Tag.add(emrStepFunction, MC.TAG_MOONSET_TYPE, MC.TAG_MOONSET_TYPE_SF);
-  cdk.Tag.add(emrStepFunction, MC.TAG_MOONSET_ID, props.id);
+  // eslint-disable-next-line
+  (<ec2.SecurityGroup>c[MC.VPC_SG]).addIngressRule(<ec2.SecurityGroup>c[MC.VPC_SG], ec2.Port.allTraffic());
 }
 
 function main() {
@@ -70,23 +61,16 @@ function main() {
           region: process.env[CC.WORKING_REGION],
         },
       });
-
-  c[MC.SF_STACK] = new cdk.Stack(<cdk.App>c[MC.CDK_APP],
-      MC.SF_STACK + '-' + props.session, {
-        env: {
-          account: process.env[CC.WORKING_ACCOUNT],
-          region: process.env[CC.WORKING_REGION],
-        },
-      });
+  const logBucket = new s3.Bucket(c[MC.INFRA_STACK], 'logBucket', {});
+  // eslint-disable-next-line
+cdk.Tag.add(logBucket, C.TAG_MOONSET_TYPE, MC.TAG_MOONSET_TYPE_LOG_S3_BUCEKT);
 
   network();
 
-  props.commands.forEach((command) => {
+  props.commands.cdk.forEach((command) => {
     const fn = PluginHost.instance.hooks[command.op];
     fn(PluginHost.instance, ...command.args);
   });
-
-  stepfunction(props);
 
   (<cdk.App>c[MC.CDK_APP]).synth();
 }
