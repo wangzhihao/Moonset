@@ -8,6 +8,7 @@ export const MoonsetConstants = {
     VPC_SG: 'MoonsetVpcSecurityGroup',
     BUILD_TMP_DIR: './build/',
     CDK_OUT_DIR: 'cdk.out/',
+    DEPLOYMENT_DIR: 'deployment/',
     SCRIPT_RUNNER: 's3://elasticmapreduce/libs/script-runner/script-runner.jar',
     MOONSET_PROPS: 'moonset.props'
 };

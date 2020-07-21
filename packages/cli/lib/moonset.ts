@@ -13,7 +13,10 @@ export class Moonset {
         .option('plugin', {type: 'string', desc: 'load plugin',
           requiresArg: true})
         .command(['config'], 'Configure the crendentials.')
-        .command(['deploy'], 'Deploy the job.')
+        .command(['deploy'], 'Deploy the job.',
+            (yargs) => yargs
+                .option('job', {type: 'string', desc: 'job payload',
+                  requiresArg: true, demandOption: true}))
         .command(['run'], 'Run the job.',
             (yargs) => yargs
                 .option('job', {type: 'string', desc: 'job payload',
@@ -35,7 +38,7 @@ export class Moonset {
         Config.ask();
         return;
       case 'deploy':
-        await new Executor().deploy();
+        logger.info('Not implemented yet.');
         return;
       case 'run':
         await new Executor().run(argv.job);
