@@ -1,5 +1,6 @@
 import * as cdk from '@aws-cdk/core';
 import * as ec2 from '@aws-cdk/aws-ec2';
+import * as s3 from '@aws-cdk/aws-s3';
 import {MoonsetConstants as MC} from '../constants';
 // eslint-disable-next-line
 import * as ir from '../ir';
@@ -7,7 +8,7 @@ import * as ir from '../ir';
 import * as vi from '../visitor';
 import {PluginHost} from '../plugin';
 import * as path from 'path';
-import {ConfigConstant as CC, Serde} from '@moonset/util';
+import {CommonConstants as C, ConfigConstant as CC, Serde} from '@moonset/util';
 
 const c = PluginHost.instance.constructs;
 
@@ -28,13 +29,13 @@ function network() {
     maxAzs: 1,
   });
   // eslint-disable-next-line
-  cdk.Tag.add(vpc, MC.TAG_MOONSET_TYPE, MC.TAG_MOONSET_TYPE_VPC);
+  cdk.Tag.add(vpc, C.TAG_MOONSET_TYPE, MC.TAG_MOONSET_TYPE_VPC);
 
   c[MC.VPC_SG] = new ec2.SecurityGroup(c[MC.INFRA_STACK], MC.VPC_SG, {
     vpc: vpc,
   });
   // eslint-disable-next-line
-  cdk.Tag.add(<ec2.SecurityGroup>c[MC.VPC_SG], MC.TAG_MOONSET_TYPE, MC.TAG_MOONSET_TYPE_VPC_SERCURITY_GROUP);
+  cdk.Tag.add(<ec2.SecurityGroup>c[MC.VPC_SG], C.TAG_MOONSET_TYPE, MC.TAG_MOONSET_TYPE_VPC_SERCURITY_GROUP);
 
   // eslint-disable-next-line
   (<ec2.SecurityGroup>c[MC.VPC_SG]).addIngressRule(<ec2.SecurityGroup>c[MC.VPC_SG], ec2.Port.allTraffic());
@@ -60,6 +61,9 @@ function main() {
           region: process.env[CC.WORKING_REGION],
         },
       });
+  const logBucket = new s3.Bucket(c[MC.INFRA_STACK], 'logBucket', {});
+  // eslint-disable-next-line
+cdk.Tag.add(logBucket, C.TAG_MOONSET_TYPE, MC.TAG_MOONSET_TYPE_LOG_S3_BUCEKT);
 
   network();
 

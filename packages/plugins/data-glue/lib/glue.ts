@@ -3,6 +3,7 @@ import * as cdk from '@aws-cdk/core';
 import {PluginHost, MoonsetConstants as MC} from '@moonset/executor';
 import * as EMR from 'aws-sdk/clients/emr';
 import {SDKProvider, CDKResourceReader, S3AssetUploader} from '@moonset/util';
+import {CommonConstants as C} from '@moonset/util';
 import * as path from 'path';
 
 async function metastoreSync(
@@ -23,13 +24,12 @@ async function metastoreSync(
       host.id,
       sdk,
   );
-  // TODO We can't find an existing S3 object without knowning its bucket 
-  // and key. Reference by tagging is not supported. S3 object is not CFN 
-  // Resource and only S3 bucket is. The reason is simple, The number of S3 
-  // objects is too huge to index.
-  // Given S3 object level index is impossible, we create the assets each time
-  // when we need. Although it's duplicate a bit. Currently no better way is
-  // available. 
+
+  // TODO We can't find an existing S3 object without knowning its bucket
+  // and key. Reference by tagging is not supported. S3 object is not CFN
+  // Resource and only S3 bucket is.
+  // Given above, we create the assets each time when we need. Although it's
+  // duplicate a bit. Currently no better way is available.
   const script = await s3AssetUploader.uploadFile(
       path.resolve(__dirname, '..', 'script', 'metastore-sync.sh'),
   );

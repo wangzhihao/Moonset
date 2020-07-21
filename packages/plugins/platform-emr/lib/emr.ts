@@ -1,18 +1,21 @@
 import * as cdk from '@aws-cdk/core';
 import * as iam from '@aws-cdk/aws-iam';
-import * as s3 from '@aws-cdk/aws-s3';
 import * as ec2 from '@aws-cdk/aws-ec2';
 import {ConfigConstant as CC, CDKResourceReader, logger} from '@moonset/util';
 import {ISDK, SDKProvider, S3AssetUploader} from '@moonset/util';
+import {CommonConstants as C} from '@moonset/util';
 import {PluginHost, MoonsetConstants as MC} from '@moonset/executor';
 import * as EMR from 'aws-sdk/clients/emr';
+
+const TAG_MOONSET_TYPE_EMR = 'EMR';
+const TAG_MOONSET_TYPE_SERVICE_SECURITY_GROUP = 'ServiceSecurityGroup';
+const TAG_MOONSET_TYPE_EMR_EC2_ROLE = 'EmrEc2Role';
+const TAG_MOONSET_TYPE_EMR_ROLE = 'EmrRole';
 
 const EMR_STACK = 'MoonsetEmrStack';
 const EMR_EC2_ROLE = 'MoonsetEmrEc2Role';
 const EMR_EC2_PROFILE = 'MoonsetEmrEc2Profile';
 const EMR_ROLE = 'MoonsetEmrRole';
-const SCRIPT_RUNNER =
-    's3://elasticmapreduce/libs/script-runner/script-runner.jar';
 
 const steps: EMR.Types.StepConfigList = [];
 
@@ -55,7 +58,7 @@ export = {
           resources: ['*'],
         }));
     // eslint-disable-next-line
-    cdk.Tag.add(ec2Role, MC.TAG_MOONSET_TYPE, MC.TAG_MOONSET_TYPE_EMR_EC2_ROLE);
+    cdk.Tag.add(ec2Role, C.TAG_MOONSET_TYPE, TAG_MOONSET_TYPE_EMR_EC2_ROLE);
 
     // eslint-disable-next-line
     new iam.CfnInstanceProfile(<cdk.Stack>c[EMR_STACK], EMR_EC2_PROFILE, {
@@ -71,7 +74,7 @@ export = {
         iam.ManagedPolicy.fromAwsManagedPolicyName(
             'service-role/AmazonElasticMapReduceRole'));
     // eslint-disable-next-line
-    cdk.Tag.add(emrRole, MC.TAG_MOONSET_TYPE, MC.TAG_MOONSET_TYPE_EMR_ROLE);
+    cdk.Tag.add(emrRole, C.TAG_MOONSET_TYPE, TAG_MOONSET_TYPE_EMR_ROLE);
 
     // TODO Why we need this role?
     // eslint-disable-next-line
@@ -86,14 +89,10 @@ export = {
       vpc: <ec2.Vpc>c[MC.VPC],
     });
     // eslint-disable-next-line
-    cdk.Tag.add(serviceSg, MC.TAG_MOONSET_TYPE, MC.TAG_MOONSET_TYPE_SERVICE_SECURITY_GROUP);
+    cdk.Tag.add(serviceSg, C.TAG_MOONSET_TYPE, TAG_MOONSET_TYPE_SERVICE_SECURITY_GROUP);
     // To prevent AWS EMR auto create ingress/egress rule.
     serviceSg.addEgressRule(emrSg, ec2.Port.tcp(8443));
     emrSg.addIngressRule(serviceSg, ec2.Port.tcp(8443));
-
-    const logBucket = new s3.Bucket(c[MC.INFRA_STACK], 'logBucket', {});
-    // eslint-disable-next-line
-    cdk.Tag.add(logBucket, MC.TAG_MOONSET_TYPE, MC.TAG_MOONSET_TYPE_LOG_S3_BUCEKT);
   },
 
   async task(host: PluginHost, type: string, task: any) {
@@ -127,7 +126,7 @@ export = {
         ActionOnFailure: 'TERMINATE_CLUSTER',
         HadoopJarStep: {
           Properties: [],
-          Jar: SCRIPT_RUNNER,
+          Jar: MC.SCRIPT_RUNNER,
           Args: [
             's3://elasticmapreduce/libs/hive/hive-script',
             '--run-hive-script',
@@ -157,13 +156,13 @@ export = {
             Ec2SubnetId: (await resources.findPrivateSubnet(MC.TAG_MOONSET_TYPE_VPC)).SubnetId!,
             EmrManagedSlaveSecurityGroup: (await resources.findSecurityGroup(MC.TAG_MOONSET_TYPE_VPC_SERCURITY_GROUP)).GroupId!, 
             EmrManagedMasterSecurityGroup: (await resources.findSecurityGroup(MC.TAG_MOONSET_TYPE_VPC_SERCURITY_GROUP)).GroupId!, 
-            ServiceAccessSecurityGroup: (await resources.findSecurityGroup(MC.TAG_MOONSET_TYPE_SERVICE_SECURITY_GROUP)).GroupId!,
+            ServiceAccessSecurityGroup: (await resources.findSecurityGroup(TAG_MOONSET_TYPE_SERVICE_SECURITY_GROUP)).GroupId!,
             KeepJobFlowAliveWhenNoSteps: true,
         },
-        JobFlowRole: (await resources.findRole(MC.TAG_MOONSET_TYPE_EMR_EC2_ROLE)).RoleName!,
+        JobFlowRole: (await resources.findRole(TAG_MOONSET_TYPE_EMR_EC2_ROLE)).RoleName!,
         VisibleToAllUsers: true,
         LogUri: `s3://${await resources.findS3Bucket(MC.TAG_MOONSET_TYPE_LOG_S3_BUCEKT)}/emr_logs`,
-        ServiceRole: (await resources.findRole(MC.TAG_MOONSET_TYPE_EMR_ROLE)).RoleName!,
+        ServiceRole: (await resources.findRole(TAG_MOONSET_TYPE_EMR_ROLE)).RoleName!,
         ReleaseLabel: host.settings.releaseLabel || 'emr-5.29.0',
         Applications: [
             {Name: 'Spark'}, {Name: 'Hive'}
