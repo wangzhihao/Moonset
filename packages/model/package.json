@@ -1,6 +1,6 @@
 {
   "name": "@moonset/model",
-  "version": "0.0.27",
+  "version": "0.0.28",
   "description": "The Moonset Model",
   "keywords": [
     "EMR",
@@ -31,7 +31,7 @@
     "url": "https://github.com/FBAChinaOpenSource/Moonset/issues"
   },
   "dependencies": {
-    "@moonset/util": "^0.0.27",
+    "@moonset/util": "^0.0.28",
     "protobufjs": "6.9.0"
   }
 }
