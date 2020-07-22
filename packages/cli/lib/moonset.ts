@@ -2,7 +2,7 @@ import 'source-map-support/register';
 import * as yargs from 'yargs';
 import {PluginHost, Executor} from '@moonset/executor';
 import {Config, ConfigConstant as CC, logger, CONFIG_PATH} from '@moonset/util';
-//import {Deploy} from '@moonset/lambda';
+import {Deploy} from '@moonset/lambda';
 
 export class Moonset {
   async run() {
@@ -36,7 +36,7 @@ export class Moonset {
         Config.ask();
         return;
       case 'deploy':
- //       new Deploy().start();
+        new Deploy().start();
         return;
       case 'run':
         await new Executor().run(argv.job);
