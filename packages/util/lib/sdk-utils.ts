@@ -16,6 +16,7 @@ export interface ISDK {
     readonly currentRegion: string;
 
     currentAccount(): Promise<Account>;
+    getSession(): Promise<string>;
 
     s3(): AWS.S3;
     ec2(): AWS.EC2;
@@ -95,18 +96,18 @@ export class SDK implements ISDK {
     }
 
 
-  // It might be a user or a role.
-  public async getSession() {
-    const sts = sts();
-    const currentUser = await sts.getCallerIdentity().promise();
-    const session = currentUser.Arn!
+    // It might be a user or a role.
+    public async getSession() {
+      const sts = this.sts();
+      const currentUser = await sts.getCallerIdentity().promise();
+      const session = currentUser.Arn!
           .split('/')
           .slice(-1)[0]
           .replace(/[^A-Za-z0-9-]/g, '-');
-    logger.info(`Current user is ${JSON.stringify(currentUser)},`
-        + ` the extract session id is ${session}.`);
-    return session;
-  }
+      logger.info(`Current user is ${JSON.stringify(currentUser)},` +
+        ` the extract session id is ${session}.`);
+      return session;
+    }
 }
 
 
