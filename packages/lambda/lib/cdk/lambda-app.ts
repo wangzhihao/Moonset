@@ -27,9 +27,9 @@ function main() {
 
   const fn = new lambda.Function(stack, MOONSET_LAMBDA, {
     runtime: lambda.Runtime.NODEJS_12_X,
-    handler: 'index.handler',
+    handler: 'lib/lambda/index.handler',
     code: lambda.Code.fromAsset(
-        path.resolve(__dirname, '..', 'lambda'),
+        path.resolve(__dirname, '..', '..'),
     ),
   });
 
