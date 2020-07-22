@@ -1,6 +1,6 @@
 {
   "name": "@moonset/lambda",
-  "version": "0.0.25",
+  "version": "0.0.26",
   "description": "Moonset Lambda",
   "keywords": [
     "Data Processing",
@@ -30,16 +30,16 @@
     "url": "https://github.com/MoonsetJS/Moonset/issues"
   },
   "dependencies": {
-    "@moonset/executor": "^0.0.25",
-    "@moonset/util": "^0.0.25",
+    "@moonset/executor": "^0.0.26",
+    "@moonset/util": "^0.0.26",
     "aws-cdk": "1.41.0",
     "aws-sdk": "2.683.0"
   },
   "devDependencies": {
-    "typescript": "3.9.3",
     "@typescript-eslint/eslint-plugin": "3.0.0",
     "@typescript-eslint/parser": "3.0.0",
     "eslint": "7.1.0",
-    "eslint-config-google": "0.14.0"
+    "eslint-config-google": "0.14.0",
+    "typescript": "3.9.3"
   }
 }
