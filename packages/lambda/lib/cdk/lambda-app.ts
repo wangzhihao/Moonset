@@ -29,7 +29,7 @@ function main() {
     runtime: lambda.Runtime.NODEJS_12_X,
     handler: 'index.handler',
     code: lambda.Code.fromAsset(
-        path.resolve(__dirname, '..', 'lambda', 'index.js'),
+        path.resolve(__dirname, '..', 'lambda'),
     ),
   });
 

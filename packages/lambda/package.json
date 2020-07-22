@@ -31,6 +31,7 @@
   },
   "dependencies": {
     "@moonset/executor": "^0.0.25",
+    "@moonset/util": "^0.0.25",
     "typescript": "3.9.3",
     "aws-cdk": "1.41.0",
     "aws-sdk": "2.683.0"

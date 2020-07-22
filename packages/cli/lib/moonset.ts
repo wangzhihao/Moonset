@@ -2,6 +2,7 @@ import 'source-map-support/register';
 import * as yargs from 'yargs';
 import {PluginHost, Executor} from '@moonset/executor';
 import {Config, ConfigConstant as CC, logger, CONFIG_PATH} from '@moonset/util';
+import {Deploy} from '@moonset/lambda';
 
 export class Moonset {
   async run() {
@@ -13,10 +14,7 @@ export class Moonset {
         .option('plugin', {type: 'string', desc: 'load plugin',
           requiresArg: true})
         .command(['config'], 'Configure the crendentials.')
-        .command(['deploy'], 'Deploy the job.',
-            (yargs) => yargs
-                .option('job', {type: 'string', desc: 'job payload',
-                  requiresArg: true, demandOption: true}))
+        .command(['deploy'], 'Deploy the job.')
         .command(['run'], 'Run the job.',
             (yargs) => yargs
                 .option('job', {type: 'string', desc: 'job payload',
@@ -38,7 +36,7 @@ export class Moonset {
         Config.ask();
         return;
       case 'deploy':
-        logger.info('Not implemented yet.');
+        new Deploy().start();
         return;
       case 'run':
         await new Executor().run(argv.job);

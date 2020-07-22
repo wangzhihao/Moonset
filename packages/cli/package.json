@@ -36,6 +36,7 @@
   },
   "dependencies": {
     "@moonset/executor": "^0.0.25",
+    "@moonset/lambda": "^0.0.25",
     "@moonset/plugin-data-glue": "^0.0.25",
     "@moonset/plugin-platform-emr": "^0.0.25",
     "@moonset/util": "^0.0.25",

@@ -10,9 +10,11 @@ export class Deploy{
 
   private sdk: ISDK;
 
-  private cdkApp = new CDKApp(
-      path.resolve(__dirname, 'cdk', 'lambda-app.js')
-  );
+  private cdkApp: CDKApp;
+
+  constructor() {
+    this.cdkApp = new CDKApp(path.resolve(__dirname, 'cdk', 'lambda-app.js'));
+  }
 
   async start() {
     const startTime = Date.now();
