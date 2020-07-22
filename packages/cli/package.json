@@ -1,6 +1,6 @@
 {
   "name": "moonset",
-  "version": "0.0.26",
+  "version": "0.0.27",
   "description": "Moonset CLI",
   "keywords": [
     "Data Processing",
@@ -35,10 +35,10 @@
     "url": "https://github.com/FBAChinaOpenSource/Moonset/issues"
   },
   "dependencies": {
-    "@moonset/executor": "^0.0.26",
-    "@moonset/plugin-data-glue": "^0.0.26",
-    "@moonset/plugin-platform-emr": "^0.0.26",
-    "@moonset/util": "^0.0.26",
+    "@moonset/executor": "^0.0.27",
+    "@moonset/plugin-data-glue": "^0.0.27",
+    "@moonset/plugin-platform-emr": "^0.0.27",
+    "@moonset/util": "^0.0.27",
     "source-map-support": "^0.5.19",
     "yargs": "^15.3.1"
   },

@@ -1,6 +1,6 @@
 {
   "name": "@moonset/lambda",
-  "version": "0.0.26",
+  "version": "0.0.27",
   "description": "Moonset Lambda",
   "keywords": [
     "Data Processing",
@@ -30,8 +30,8 @@
     "url": "https://github.com/MoonsetJS/Moonset/issues"
   },
   "dependencies": {
-    "@moonset/executor": "^0.0.26",
-    "@moonset/util": "^0.0.26",
+    "@moonset/executor": "^0.0.27",
+    "@moonset/util": "^0.0.27",
     "aws-cdk": "1.41.0",
     "aws-sdk": "2.683.0"
   },
