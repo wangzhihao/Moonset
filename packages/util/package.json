@@ -32,7 +32,6 @@
   "dependencies": {
     "aws-cdk": "1.41.0",
     "aws-sdk": "2.683.0",
-    "execa": "4.0.2",
     "inquirer": "7.1.0",
     "winston": "3.2.1"
   },

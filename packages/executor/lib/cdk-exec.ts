@@ -1,32 +1,36 @@
 import * as path from 'path';
 import * as execa from 'execa';
+import {PluginHost} from './plugin';
+import {MoonsetConstants as MC} from './constants';
 
 export class CDKApp {
-  public readonly BUILD_TMP_DIR = './build/';
-  public readonly CDK_OUT_DIR = 'cdk.out/';
   private APP_FILENAME: string;
 
   constructor(private appPath: string) {
     this.APP_FILENAME = path.basename(appPath);
   }
 
-  public async deploy(args: string[]) {
+  public async deploy(...args: string[]) {
+    const cdkPlugins = PluginHost.instance.cdkPlugins.map(p => {
+        return `--plugin=${p}`;
+      });
     await this.execute([
       'deploy',
       '*',
       ...args,
+      ...cdkPlugins,
       `--app=${path.join(
-          this.BUILD_TMP_DIR, this.CDK_OUT_DIR, this.APP_FILENAME)}`,
+          MC.BUILD_TMP_DIR, MC.CDK_OUT_DIR, this.APP_FILENAME)}`,
     ]);
   }
 
-  public async synth(args: string[]) {
+  public async synth(...args: string[]) {
     await this.execute([
       'synth',
       ...args,
       `--app="node ${this.appPath}"`,
       `--output=${path.join(
-          this.BUILD_TMP_DIR, this.CDK_OUT_DIR, this.APP_FILENAME)}`,
+          MC.BUILD_TMP_DIR, MC.CDK_OUT_DIR, this.APP_FILENAME)}`,
     ]);
   }
 
