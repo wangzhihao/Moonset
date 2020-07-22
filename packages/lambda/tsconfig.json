@@ -1,0 +1,26 @@
+{
+    "compilerOptions": {
+        "target":"ES2018",
+        "module": "commonjs",
+        "lib": ["es2016", "es2017.object", "es2017.string"],
+        "declaration": true,
+        "strict": true,
+        "noImplicitAny": true,
+        "strictNullChecks": true,
+        "noImplicitThis": true,
+        "alwaysStrict": true,
+        "noUnusedLocals": false,
+        "noUnusedParameters": true,
+        "noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": true,
+        "inlineSourceMap": true,
+        "inlineSources": true,
+	    "incremental": false,
+        "experimentalDecorators": true,
+        "strictPropertyInitialization":false
+    },
+    "include": [
+        "**/*.ts"
+    ],
+    "exclude": ["build","node_modules", "dist"]
+}

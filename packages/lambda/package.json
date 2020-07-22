@@ -1,0 +1,44 @@
+{
+  "name": "@moonset/lambda",
+  "version": "0.0.25",
+  "description": "Moonset Lambda",
+  "keywords": [
+    "Data Processing",
+    "AWS",
+    "EMR"
+  ],
+  "author": "Zhihao Wang <accept.acm@gmail.com>",
+  "homepage": "https://github.com/MoonsetJS/Moonset",
+  "license": "Apache",
+  "main": "lib/index.js",
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MoonsetJS/Moonset.git"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "lint": "eslint --fix ./lib/**/*.ts",
+    "clean": "find lib -type f -name \"*.js\" -o -name \"*.d.ts\" | xargs -r rm",
+    "prepare": "npm run-script clean && npm run-script lint && npm run-script build",
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "bugs": {
+    "url": "https://github.com/MoonsetJS/Moonset/issues"
+  },
+  "dependencies": {
+    "@moonset/executor": "^0.0.25",
+    "typescript": "3.9.3",
+    "aws-cdk": "1.41.0",
+    "aws-sdk": "2.683.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "3.0.0",
+    "@typescript-eslint/parser": "3.0.0",
+    "eslint": "7.1.0",
+    "eslint-config-google": "0.14.0"
+  }
+}

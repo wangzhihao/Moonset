@@ -1,0 +1,5 @@
+tsconfig.tsbuildinfo
+lib/**/*.d.ts
+lib/**/*.js
+build/
+
