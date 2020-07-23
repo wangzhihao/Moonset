@@ -21,6 +21,7 @@
     "rules": {
         "require-jsdoc": "off",
         "valid-jsdoc": "off",
-        "no-unused-vars": "off"
+        "no-unused-vars": "off",
+        "max-len": ["error", { "code": 120 }]
     }
 }

@@ -62,8 +62,9 @@ export class PluginHost {
    */
   public load(moduleSpec: string) {
       /* eslint-disable @typescript-eslint/no-require-imports */
-      const plugin = require(moduleSpec);
+      const pluginModule = require(moduleSpec);
       /* eslint-enable */
+      pluginModule.plugins.forEach((plugin: any) => {
       if (isDataPlugin(plugin)) {
           this.hooks[`data.${plugin.type}.init`] = plugin.init;
           this.hooks[`data.${plugin.type}.import`] = plugin.import;
@@ -76,9 +77,11 @@ export class PluginHost {
           this.plugins.push(moduleSpec);
           this.platformPlugins[plugin.type] = plugin;
       } else {
-            CdkPluginHost.instance.load(moduleSpec);
+          // TODO CDK plugins feature is broken.
+          CdkPluginHost.instance.load(moduleSpec);
           this.cdkPlugins.push(moduleSpec);
       }
+      })
     function isDataPlugin(x: any): x is DataPlugin {
       return x != null && x.plugin === 'data' && x.version === '1';
     }
