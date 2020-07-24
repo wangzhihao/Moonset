@@ -6,39 +6,41 @@ import {RequestGenerator} from './request-generator';
 import {Platform, EMRConstants as EC} from './constants';
 import {CDKResourceManager} from './cdk-resource-manager';
 
-const steps: EMR.Types.StepConfigList = [];
 
-export const EmrSdkPlatformPlugin = {
-  version: '1',
-  plugin: 'platform',
-  type: Platform.EMR_SDK,
-  steps: steps,
+export class EmrSdkPlatformPlugin {
+    public readonly version = '1';
+    public readonly plugin = 'platform';
+    public readonly type = Platform.EMR_SDK;
+    public steps: EMR.Types.StepConfigList = [];
 
-  init(host: PluginHost) {
-    new CDKResourceManager(host, Platform.EMR_SDK).setup();
-  },
+    constructor() {
+    }
 
-  async task(host: PluginHost, type: string, task: any) {
-    const sdk = await SDKProvider.forWorkingAccount();
-    const resources = new CDKResourceReader(host.session, sdk);
-    const generator = new RequestGenerator(host, Platform.EMR_SDK, resources);
-    steps.push(await generator.getStepConfig(type, task));
-  },
+    init(host: PluginHost) {
+      new CDKResourceManager(host, Platform.EMR_SDK).setup();
+    }
 
-  async run(host: PluginHost) {
-    const sdk = await SDKProvider.forWorkingAccount();
-    // For now we only have working account's cdk resources.
-    const resources = new CDKResourceReader(host.session, sdk);
-    const generator = new RequestGenerator(host, Platform.EMR_SDK, resources);
+    async task(host: PluginHost, type: string, task: any) {
+      const sdk = await SDKProvider.forWorkingAccount();
+      const resources = new CDKResourceReader(host.session, sdk);
+      const generator = new RequestGenerator(host, Platform.EMR_SDK, resources);
+      this.steps.push(await generator.getStepConfig(type, task));
+    }
 
-    // EMR runs in working account.
-    const emr = sdk.emr();
-    const params = {
-        Steps: steps,
+    async run(host: PluginHost) {
+      const sdk = await SDKProvider.forWorkingAccount();
+      // For now we only have working account's cdk resources.
+      const resources = new CDKResourceReader(host.session, sdk);
+      const generator = new RequestGenerator(host, Platform.EMR_SDK, resources);
+
+      // EMR runs in working account.
+      const emr = sdk.emr();
+      const params = {
+        Steps: this.steps,
         ...(await generator.getRunJobFlowInput()),
-    };
-    logger.info(`EMR will be created with params: ${JSON.stringify(params)}.`);
-    await emr.runJobFlow(params).promise();
-  },
+      };
+      logger.info(`EMR will be created with params: ${JSON.stringify(params)}.`);
+      await emr.runJobFlow(params).promise();
+    }
 };
 

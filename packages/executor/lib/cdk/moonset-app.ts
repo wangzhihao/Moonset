@@ -68,8 +68,11 @@ cdk.Tag.add(logBucket, C.TAG_MOONSET_TYPE, MC.TAG_MOONSET_TYPE_LOG_S3_BUCEKT);
   network();
 
   props.commands.cdk.forEach((command) => {
-    const fn = PluginHost.instance.hooks[command.op];
-    fn(PluginHost.instance, ...command.args);
+    // TODO Some assumption on all cdk hooks are synchronous are made here.
+    // It's very easy to forget and break the assumption. Can we find a way
+    // to improve it?
+    const hook = PluginHost.instance.hooks[command.op];
+    hook.fn.call(hook.thisArg, PluginHost.instance, ...command.args);
   });
 
   (<cdk.App>c[MC.CDK_APP]).synth();

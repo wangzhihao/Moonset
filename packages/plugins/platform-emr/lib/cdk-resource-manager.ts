@@ -88,20 +88,20 @@ export class CDKResourceManager {
     // TODO: EMR SDK don't need this resource, can we set it only for EMR SF?
     // eslint-disable-next-line
     const sfRole = new iam.Role(stack, EC.SF_ROLE, {
-        assumedBy: new iam.ServicePrincipal(`states.${process.env[CC.WORKING_REGION]}.amazonaws.com`),
-      });
-      sfRole.addToPolicy(
-          new iam.PolicyStatement({
-            actions: ['elasticmapreduce:*'],
-            resources: ['*'],
-          }));
-      sfRole.addToPolicy(
-          new iam.PolicyStatement({
-            actions: ['iam:PassRole'],
-            resources: ['*'],
-          }));
+      assumedBy: new iam.ServicePrincipal(`states.${process.env[CC.WORKING_REGION]}.amazonaws.com`),
+    });
+    sfRole.addToPolicy(
+        new iam.PolicyStatement({
+          actions: ['elasticmapreduce:*'],
+          resources: ['*'],
+        }));
+    sfRole.addToPolicy(
+        new iam.PolicyStatement({
+          actions: ['iam:PassRole'],
+          resources: ['*'],
+        }));
 
-      // eslint-disable-next-line
+    // eslint-disable-next-line
     cdk.Tag.add(sfRole, C.TAG_MOONSET_TYPE, EC.TAG_MOONSET_TYPE_SF_ROLE);
   }
 }

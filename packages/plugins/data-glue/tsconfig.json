@@ -17,6 +17,7 @@
         "inlineSources": true,
 	    "incremental": false,
         "experimentalDecorators": true,
+        "suppressImplicitAnyIndexErrors": true,
         "strictPropertyInitialization":false
     },
     "include": [

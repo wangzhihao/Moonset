@@ -17,8 +17,8 @@ export class Run{
 
   private async invoke(commands: ir.IR) {
       for (let command of commands.sdk) {
-        const fn = PluginHost.instance.hooks[command.op];
-        await fn(PluginHost.instance, ...command.args);
+        const hook = PluginHost.instance.hooks[command.op];
+        await hook.fn.call(hook.thisArg, PluginHost.instance, ...command.args);
       }
   }
 
