@@ -21,7 +21,7 @@ export interface PlatformPlugin {
 
   version: '1';
 
-  pluginType: 'platform';
+  plugin: 'platform';
       
   type: string;
 
@@ -32,10 +32,15 @@ export interface PlatformPlugin {
   run: (host: PluginHost) => Promise<any>;
 }
 
+export interface Hook {
+    fn: Function;
+    thisArg: any;
+}
+
 export class PluginHost {
   static instance = new PluginHost();
 
-  readonly hooks: { [key: string]: Function; } = {};
+  readonly hooks: { [key: string]: Hook; } = {};
   readonly plugins: string[] = [];
   readonly cdkPlugins: string[] = [];
   constructs: { [key: string]: any; } = {}; //TODO: too open
@@ -62,23 +67,26 @@ export class PluginHost {
    */
   public load(moduleSpec: string) {
       /* eslint-disable @typescript-eslint/no-require-imports */
-      const plugin = require(moduleSpec);
+      const pluginModule = require(moduleSpec);
       /* eslint-enable */
+      pluginModule.plugins.forEach((plugin: any) => {
       if (isDataPlugin(plugin)) {
-          this.hooks[`data.${plugin.type}.init`] = plugin.init;
-          this.hooks[`data.${plugin.type}.import`] = plugin.import;
-          this.hooks[`data.${plugin.type}.export`] = plugin.export;
+          this.hooks[`data.${plugin.type}.init`] = {fn: plugin.init, thisArg: plugin};
+          this.hooks[`data.${plugin.type}.import`] = {fn: plugin.import, thisArg: plugin};
+          this.hooks[`data.${plugin.type}.export`] = {fn: plugin.export, thisArg: plugin};
           this.plugins.push(moduleSpec);
       } else if (isPlatformPlugin(plugin)) {
-          this.hooks[`platform.${plugin.type}.init`] = plugin.init;
-          this.hooks[`platform.${plugin.type}.task`] = plugin.task;
-          this.hooks[`platform.${plugin.type}.run`] = plugin.run;
+          this.hooks[`platform.${plugin.type}.init`] = {fn: plugin.init, thisArg: plugin};
+          this.hooks[`platform.${plugin.type}.task`] = {fn: plugin.task, thisArg: plugin};
+          this.hooks[`platform.${plugin.type}.run`] = {fn: plugin.run, thisArg: plugin};
           this.plugins.push(moduleSpec);
           this.platformPlugins[plugin.type] = plugin;
       } else {
-            CdkPluginHost.instance.load(moduleSpec);
+          // TODO CDK plugins feature is broken.
+          CdkPluginHost.instance.load(moduleSpec);
           this.cdkPlugins.push(moduleSpec);
       }
+      })
     function isDataPlugin(x: any): x is DataPlugin {
       return x != null && x.plugin === 'data' && x.version === '1';
     }

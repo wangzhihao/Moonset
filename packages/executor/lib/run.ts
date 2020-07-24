@@ -17,8 +17,8 @@ export class Run{
 
   private async invoke(commands: ir.IR) {
       for (let command of commands.sdk) {
-    const fn = PluginHost.instance.hooks[command.op];
-    await fn(PluginHost.instance, ...command.args);
+        const hook = PluginHost.instance.hooks[command.op];
+        await hook.fn.call(hook.thisArg, PluginHost.instance, ...command.args);
       }
   }
 
@@ -27,6 +27,7 @@ export class Run{
 
     const commands: ir.IR = {cdk: [], sdk: []};
     root.accept(new ir.RunVisitor(), commands);
+    logger.info("The intermediate representation are: " + JSON.stringify(commands));
 
     const id = uuid();
 
