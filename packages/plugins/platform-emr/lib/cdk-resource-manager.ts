@@ -27,7 +27,7 @@ export class CDKResourceManager {
         });
 
     // eslint-disable-next-line
-    const ec2Role = new iam.Role(stack, EC.EMR_EC2_ROLE, {
+    const ec2Role = c[EC.EMR_EC2_ROLE] = new iam.Role(stack, EC.EMR_EC2_ROLE, {
       assumedBy: new iam.ServicePrincipal('ec2.amazonaws.com'),
     });
 

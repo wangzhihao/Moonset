@@ -31,6 +31,7 @@
   },
   "dependencies": {
     "aws-cdk": "1.41.0",
+    "@aws-cdk/core": "1.41.0",
     "aws-sdk": "2.683.0",
     "inquirer": "7.1.0",
     "winston": "3.2.1"

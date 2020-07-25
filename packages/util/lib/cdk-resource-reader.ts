@@ -1,3 +1,4 @@
+import * as cdk from '@aws-cdk/core';
 import {ISDK} from './sdk-utils';
 import {CommonConstants as CC} from './constants';
 import * as EC2 from 'aws-sdk/clients/ec2';
@@ -25,7 +26,7 @@ export class CDKResourceReader {
      *
      */
   constructor(private readonly session: string, private sdk: ISDK) {
-
+    // TODO We don't need session any more.
   }
 
   async findSecurityGroup(tag: string): Promise<EC2.Types.SecurityGroup> {
@@ -150,6 +151,14 @@ export class CDKResourceReader {
     return matchedRoles[0];
   }
 
+  async findRoleCDK(stack: cdk.Stack, element: cdk.CfnElement): Promise<string> {
+      const resource = await this.findResourceCDK(stack, element);
+    if (resource.ResourceType != 'AWS::IAM::Role') {
+        throw new Error(`Resource ${resource.ResourceType} found, but AWS::IAM::Role is expected.`);
+    }
+      const roleName = resource.PhysicalResourceId!; 
+      return roleName;
+  }
   async findS3Bucket(tag: string): Promise<string> {
     const tagApi = this.sdk.tagApi();
     const resources = await tagApi.getResources({
@@ -176,7 +185,22 @@ export class CDKResourceReader {
     return bucket;
   }
 
-  async findCfnResource(stackName: string, logicalId: string):
+  async findLambda(stack: cdk.Stack, element: cdk.CfnElement): Promise<string> {
+      const resource = await this.findResourceCDK(stack, element);
+    if (resource.ResourceType != 'AWS::Lambda::Function') {
+        throw new Error('The resource is not a lambda');
+    }
+      const functionName = resource.PhysicalResourceId!; 
+      return functionName;
+  }
+
+  private async findResourceCDK(stack: cdk.Stack, element: cdk.CfnElement):
+    Promise<CFN.Types.StackResourceDetail> {
+    const logicalId = stack.getLogicalId(element);
+    return await this.findResourceSDK(stack.stackName, logicalId);
+  }
+
+  private async findResourceSDK(stackName: string, logicalId: string):
     Promise<CFN.Types.StackResourceDetail> {
     const cfn = this.sdk.cfn();
     const params = {StackName: stackName, LogicalResourceId: logicalId};

@@ -1,3 +1,4 @@
+import * as cdk from '@aws-cdk/core';
 import {CDKResourceReader, logger} from '@moonset/util';
 import {ISDK, SDKProvider} from '@moonset/util';
 import {PluginHost, MoonsetConstants as MC} from '@moonset/executor';
@@ -40,7 +41,9 @@ export class EmrSdkPlatformPlugin {
         ...(await generator.getRunJobFlowInput()),
       };
       logger.info(`EMR will be created with params: ${JSON.stringify(params)}.`);
-      await emr.runJobFlow(params).promise();
+      const c = host.constructs;
+      logger.info(await resources.findRoleCDK(c[EC.EMR_STACK], c[EC.EMR_EC2_ROLE]));
+      //await emr.runJobFlow(params).promise();
     }
 };
 
