@@ -106,8 +106,8 @@ export class CDKResourceReader {
    * IAM Role API doesn't work well with Tag.
    * Check https://github.com/boto/boto3/issues/1855
    *
-   * ResourceGroupsTaggingAPI also doesn't work well with IAM Role Tag. Check 
-   * the support list: 
+   * ResourceGroupsTaggingAPI also doesn't work well with IAM Role Tag. Check
+   * the support list:
    * https://docs.aws.amazon.com/resourcegroupstagging/latest/APIReference/Welcome.html
    *
    * So we go through all roles and check the tag for each role.
@@ -157,7 +157,7 @@ export class CDKResourceReader {
 
   async findS3Bucket(tag: string): Promise<string> {
     const bucket = (await this.findResourceArn(tag))
-      .replace('arn:aws:s3:::', '');
+        .replace('arn:aws:s3:::', '');
     return bucket;
   }
 
@@ -180,8 +180,8 @@ export class CDKResourceReader {
             resources.ResourceTagMappingList.length != 1 ||
             !resources.ResourceTagMappingList[0].ResourceARN
     ) {
-      throw new Error(`The resource should be uniquely identified.`
-          + `However we found ${JSON.stringify(resources)}.`);
+      throw new Error(`The resource should be uniquely identified.` +
+          `However we found ${JSON.stringify(resources)}.`);
     }
     return resources.ResourceTagMappingList[0].ResourceARN;
   }
