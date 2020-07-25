@@ -105,7 +105,12 @@ export class CDKResourceReader {
   /**
    * IAM Role API doesn't work well with Tag.
    * Check https://github.com/boto/boto3/issues/1855
-   * Go through all roles and check the tag for each role.
+   *
+   * ResourceGroupsTaggingAPI also doesn't work well with IAM Role Tag. Check 
+   * the support list: 
+   * https://docs.aws.amazon.com/resourcegroupstagging/latest/APIReference/Welcome.html
+   *
+   * So we go through all roles and check the tag for each role.
    */
   async findRole(tag: string): Promise<IAM.Types.Role> {
     const iam = this.sdk.iam();
@@ -151,6 +156,12 @@ export class CDKResourceReader {
   }
 
   async findS3Bucket(tag: string): Promise<string> {
+    const bucket = (await this.findResourceArn(tag))
+      .replace('arn:aws:s3:::', '');
+    return bucket;
+  }
+
+  async findResourceArn(tag: string): Promise<string> {
     const tagApi = this.sdk.tagApi();
     const resources = await tagApi.getResources({
       TagFilters: [
@@ -169,22 +180,9 @@ export class CDKResourceReader {
             resources.ResourceTagMappingList.length != 1 ||
             !resources.ResourceTagMappingList[0].ResourceARN
     ) {
-      throw new Error('The s3 bucket should be uniquely identified.');
+      throw new Error(`The resource should be uniquely identified.`
+          + `However we found ${JSON.stringify(resources)}.`);
     }
-    const arn = resources.ResourceTagMappingList[0].ResourceARN;
-    const bucket = arn.replace('arn:aws:s3:::', '');
-    return bucket;
-  }
-
-  async findCfnResource(stackName: string, logicalId: string):
-    Promise<CFN.Types.StackResourceDetail> {
-    const cfn = this.sdk.cfn();
-    const params = {StackName: stackName, LogicalResourceId: logicalId};
-    const data = await cfn.describeStackResource(params).promise();
-    if (!data.StackResourceDetail) {
-      throw new Error('No CloudFormation resource is referenced by ' +
-      `StackName : ${stackName} and LogicalResourceId: ${logicalId}.`);
-    }
-    return data.StackResourceDetail;
+    return resources.ResourceTagMappingList[0].ResourceARN;
   }
 }
